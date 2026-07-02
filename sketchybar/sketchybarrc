@@ -94,7 +94,7 @@ sketchybar --add item brand left \
         icon.color="$CORTEX_GREEN" \
         label.drawing=off \
         background.color="$PILL" \
-        click_script="open '$HOME/dev'"
+        click_script="open '${DEV_DIR:-\$HOME/dev}'"
 
 sketchybar --add item brand.tertiary left \
     --set brand.tertiary \
@@ -105,7 +105,7 @@ sketchybar --add item brand.tertiary left \
         icon.color="$CORTEX_GREEN" \
         label.drawing=off \
         background.color="$PILL" \
-        click_script="open '$HOME/dev'"
+        click_script="open '${DEV_DIR:-\$HOME/dev}'"
 
 sketchybar --add item brand.secondary left \
     --set brand.secondary \
@@ -116,7 +116,7 @@ sketchybar --add item brand.secondary left \
         icon.color="$CORTEX_GREEN" \
         label.drawing=off \
         background.color="$PILL" \
-        click_script="open '$HOME/dev'"
+        click_script="open '${DEV_DIR:-\$HOME/dev}'"
 
 sketchybar --add item brand.external left \
     --set brand.external \
@@ -127,7 +127,7 @@ sketchybar --add item brand.external left \
         icon.color="$CORTEX_GREEN" \
         label.drawing=off \
         background.color="$PILL" \
-        click_script="open '$HOME/dev'"
+        click_script="open '${DEV_DIR:-\$HOME/dev}'"
 
 for sid in 1 2 3 4 5 6 7 8 9 10; do
     sketchybar --add space "space.$sid" left \
