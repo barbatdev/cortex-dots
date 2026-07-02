@@ -278,6 +278,12 @@ fi
 
 echo "Install mode: $INSTALL_MODE"
 
+GHOSTTY_LIVE_WARNING_SHOWN=false
+
+ghostty_is_running() {
+    pgrep -x ghostty >/dev/null 2>&1 || pgrep -f '[g]hostty' >/dev/null 2>&1
+}
+
 run_or_plan() {
     local message="$1"
     shift
@@ -405,7 +411,7 @@ echo "💾 Haciendo backup de configs existentes..."
 backup_if_exists() {
     local src="$1"
     if [[ -e "$src" && ! -L "$src" ]]; then
-        local backup="${src}.bak_${TIMESTAMP}"
+        local backup="${src}.bak_${TIMESTAMP}.$$"
         if [[ "$DRY_RUN" == true ]]; then
             echo "  → Would backup $src to $backup"
         elif [[ -d "$src" ]]; then
@@ -441,11 +447,17 @@ echo "🔗 Instalando configs ($INSTALL_MODE)..."
 install_target() {
     local src="$1"
     local dst="$2"
+    local tmp="${dst}.tmp.$$"
+    local replaced="${dst}.previous_${TIMESTAMP}.$$"
+
     if [[ "$DRY_RUN" == true ]]; then
         if [[ "$INSTALL_MODE" == "symlink" ]]; then
             echo "  → Would symlink $dst → $src"
         else
-            echo "  → Would copy $src → $dst"
+            echo "  → Would atomically copy $src → $dst"
+        fi
+        if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
+            echo "  ⚠️  Ghostty está corriendo; se usaría escritura atómica para evitar reload parcial"
         fi
     elif [[ "$INSTALL_MODE" == "symlink" ]]; then
         mkdir -p "$(dirname "$dst")"
@@ -455,11 +467,24 @@ install_target() {
         echo "  ✓ $dst → $src"
     else
         mkdir -p "$(dirname "$dst")"
-        rm -rf "$dst"
+
+        if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running && [[ "$GHOSTTY_LIVE_WARNING_SHOWN" == false ]]; then
+            echo "  ⚠️  Ghostty está corriendo; instalando config con reemplazo atómico para evitar reload parcial"
+            GHOSTTY_LIVE_WARNING_SHOWN=true
+        fi
+
+        if [[ -e "$tmp" || -L "$tmp" ]]; then
+            mv "$tmp" "${tmp}.stale_${TIMESTAMP}"
+        fi
         if [[ -d "$src" ]]; then
-            cp -R "$src" "$dst"
+            cp -R "$src" "$tmp"
+            if [[ -e "$dst" || -L "$dst" ]]; then
+                mv "$dst" "$replaced"
+            fi
+            mv "$tmp" "$dst"
         else
-            cp "$src" "$dst"
+            cp "$src" "$tmp"
+            mv -f "$tmp" "$dst"
         fi
         echo "  ✓ $dst ← $src"
     fi
