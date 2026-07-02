@@ -1,6 +1,6 @@
 # cortex-dots
 
-Open-source dotfiles for a macOS terminal workflow centered on Ghostty, Zsh, Starship, tmux, SketchyBar, Herdr, Claude Code, and OpenCode.
+Open-source dotfiles for a terminal workflow centered on Ghostty, Zsh, Starship, Herdr, Claude Code, and OpenCode.
 
 The repo is intentionally generic. Private paths, tokens, emails, hostnames, project aliases, and machine-specific overrides belong in `local/env.zsh`, which is gitignored and generated from `local/env.zsh.example`.
 
@@ -31,10 +31,7 @@ bash install.sh --check
 | Shell | `zsh/zshrc`, `zsh/scripts/` |
 | Terminal | `ghostty/config`, `ghostty/shaders/` |
 | Prompt | `starship/starship.toml` using the generic `cortex_warm_slate` palette |
-| Multiplexer | `tmux/tmux.conf` plus session helpers |
-| macOS bar | `sketchybar/` with generic display roles and Cortex colors |
-| macOS windowing | optional `yabai/` and `skhd/` configs |
-| Keyboard | `karabiner/karabiner.json` profile named `cortex` |
+| Multiplexer | `herdr/config.toml` plus session helpers |
 | AI CLI UX | `claude/`, `opencode/`, Herdr helpers, agent-state docs |
 | Package guardrails | global defaults for `npm`, `pnpm`, `bun`, and `uv` |
 
@@ -85,26 +82,7 @@ Never commit `local/env.zsh`.
 
 The OSS snapshot uses the official `FiraCode Nerd Font` installed by Homebrew when available. A previously bundled custom font binary is intentionally not included because downstream users should verify font licensing and branding assets themselves.
 
-If you want a custom font, install it manually and update `ghostty/config`, `sketchybar/sketchybarrc`, and `starship/starship.toml` locally.
-
-## SketchyBar
-
-The included bar is macOS-only, notch-friendly, and generic. It detects display count and assigns roles instead of hard-coding physical monitor names:
-
-| Role | Meaning |
-| --- | --- |
-| `main` | built-in or primary display |
-| `secondary` | second display when present |
-| `tertiary` | third display when present |
-| `external` | last external display when present |
-
-Force a profile when macOS reports stale displays:
-
-```bash
-~/.config/sketchybar/sketchybar-profile.sh portable
-~/.config/sketchybar/sketchybar-profile.sh office
-~/.config/sketchybar/sketchybar-profile.sh auto
-```
+If you want a custom font, install it manually and update `ghostty/config` and `starship/starship.toml` locally.
 
 ## OSS Audit
 
@@ -122,7 +100,6 @@ The audit scans tracked files only and fails on known private identifiers, priva
 scripts/oss-audit.sh
 bash -n install.sh
 zsh -n zsh/zshrc
-jq empty karabiner/karabiner.json
 python3 - <<'PY'
 import pathlib, tomllib
 for path in pathlib.Path('.').rglob('*.toml'):
