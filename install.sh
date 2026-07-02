@@ -49,6 +49,25 @@ for arg in "$@"; do
     esac
 done
 
+INSTALL_LOG="$CORTEX_CONFIG_HOME/install.log"
+GHOSTTY_APPLY_LOG="$CORTEX_CONFIG_HOME/ghostty-apply.log"
+
+if [[ "$CHECK_MODE" != true && "$DRY_RUN" != true ]]; then
+    mkdir -p "$CORTEX_CONFIG_HOME"
+    touch "$INSTALL_LOG"
+    exec > >(tee -a "$INSTALL_LOG") 2>&1
+
+    echo ""
+    echo "===== cortex-dots install $(date -Is) ====="
+    echo "log: $INSTALL_LOG"
+    echo "repo: $DOTFILES"
+    echo "platform: $PLATFORM"
+    echo "mode: $INSTALL_MODE"
+    echo "pid: $$"
+
+    trap 'code=$?; echo "ERROR install failed at line $LINENO with exit $code"; echo "log: $INSTALL_LOG"; exit $code' ERR
+fi
+
 if [[ "$CHECK_MODE" == true ]]; then
     WARNINGS=0
     CRITICAL_FAILURES=0
@@ -301,15 +320,24 @@ set -eu
 CONFIG_HOME="$CORTEX_CONFIG_HOME"
 PENDING_DIR="$PENDING_GHOSTTY_DIR"
 TARGET_DIR="$HOME/.config/ghostty"
+LOG_FILE="$GHOSTTY_APPLY_LOG"
 STAMP="\$(date +%Y%m%d_%H%M%S).\$\$"
+
+mkdir -p "\$(dirname "\$LOG_FILE")"
+echo "===== ghostty deferred apply \$(date -Is) =====" >> "\$LOG_FILE"
+echo "pending: \$PENDING_DIR" >> "\$LOG_FILE"
+echo "target: \$TARGET_DIR" >> "\$LOG_FILE"
 
 ghostty_running() {
     ps -eo comm=,args= | awk '\$1 == "ghostty" || \$2 == "ghostty" || \$2 ~ /\\/ghostty\$/ { found = 1 } END { exit found ? 0 : 1 }'
 }
 
 while ghostty_running; do
+    echo "waiting for Ghostty to exit..." >> "\$LOG_FILE"
     sleep 1
 done
+
+echo "Ghostty exited; applying pending config" >> "\$LOG_FILE"
 
 mkdir -p "\$TARGET_DIR"
 
@@ -318,6 +346,7 @@ if [ -f "\$PENDING_DIR/config" ]; then
     cp "\$PENDING_DIR/config" "\$tmp"
     mv -f "\$tmp" "\$TARGET_DIR/config"
     mv "\$PENDING_DIR/config" "\$PENDING_DIR/config.applied_\$STAMP"
+    echo "applied config" >> "\$LOG_FILE"
 fi
 
 if [ -d "\$PENDING_DIR/shaders" ]; then
@@ -329,7 +358,10 @@ if [ -d "\$PENDING_DIR/shaders" ]; then
     fi
     mv "\$tmp" "\$TARGET_DIR/shaders"
     mv "\$PENDING_DIR/shaders" "\$PENDING_DIR/shaders.applied_\$STAMP"
+    echo "applied shaders" >> "\$LOG_FILE"
 fi
+
+echo "done" >> "\$LOG_FILE"
 EOF
     chmod +x "$worker"
 }
@@ -343,8 +375,9 @@ start_ghostty_apply_worker() {
     if [[ "$DRY_RUN" == true ]]; then
         echo "  → Would launch deferred Ghostty applier after Ghostty exits"
     else
-        nohup "$CORTEX_CONFIG_HOME/apply-pending-ghostty.sh" >/tmp/cortex-dots-ghostty-apply.log 2>&1 &
+        nohup "$CORTEX_CONFIG_HOME/apply-pending-ghostty.sh" >>"$GHOSTTY_APPLY_LOG" 2>&1 &
         echo "  → Ghostty config pendiente: se aplicará automáticamente cuando Ghostty se cierre"
+        echo "  → Log deferred Ghostty: $GHOSTTY_APPLY_LOG"
     fi
     GHOSTTY_DEFER_WORKER_STARTED=true
 }
@@ -674,6 +707,7 @@ if [[ "$DRY_RUN" == true ]]; then
     echo "✅ Dry run completado; no se aplicaron cambios."
 else
     echo "✅ Instalación completada!"
+    echo "   Log: $INSTALL_LOG"
 fi
 echo ""
 echo "  Próximos pasos:"
