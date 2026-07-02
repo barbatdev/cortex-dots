@@ -8,6 +8,7 @@ DRY_RUN=false
 CHECK_MODE=false
 INSTALL_MODE="copy"
 CORTEX_CONFIG_HOME="${CORTEX_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/cortex-dots}"
+PENDING_GHOSTTY_DIR="$CORTEX_CONFIG_HOME/pending/ghostty"
 
 case "$(uname -s)" in
     Darwin)
@@ -279,9 +280,105 @@ fi
 echo "Install mode: $INSTALL_MODE"
 
 GHOSTTY_LIVE_WARNING_SHOWN=false
+GHOSTTY_DEFER_WORKER_STARTED=false
 
 ghostty_is_running() {
     ps -eo comm=,args= | awk '$1 == "ghostty" || $2 == "ghostty" || $2 ~ /\/ghostty$/ { found = 1 } END { exit found ? 0 : 1 }'
+}
+
+write_ghostty_apply_worker() {
+    local worker="$CORTEX_CONFIG_HOME/apply-pending-ghostty.sh"
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would create deferred Ghostty applier: $worker"
+        return
+    fi
+
+    mkdir -p "$CORTEX_CONFIG_HOME"
+    cat > "$worker" <<EOF
+#!/bin/sh
+set -eu
+
+CONFIG_HOME="$CORTEX_CONFIG_HOME"
+PENDING_DIR="$PENDING_GHOSTTY_DIR"
+TARGET_DIR="$HOME/.config/ghostty"
+STAMP="\$(date +%Y%m%d_%H%M%S).\$\$"
+
+ghostty_running() {
+    ps -eo comm=,args= | awk '\$1 == "ghostty" || \$2 == "ghostty" || \$2 ~ /\\/ghostty\$/ { found = 1 } END { exit found ? 0 : 1 }'
+}
+
+while ghostty_running; do
+    sleep 1
+done
+
+mkdir -p "\$TARGET_DIR"
+
+if [ -f "\$PENDING_DIR/config" ]; then
+    tmp="\$TARGET_DIR/.tmp.config.\$STAMP"
+    cp "\$PENDING_DIR/config" "\$tmp"
+    mv -f "\$tmp" "\$TARGET_DIR/config"
+    mv "\$PENDING_DIR/config" "\$PENDING_DIR/config.applied_\$STAMP"
+fi
+
+if [ -d "\$PENDING_DIR/shaders" ]; then
+    tmp="\$TARGET_DIR/shaders.tmp.\$STAMP"
+    previous="\$TARGET_DIR/shaders.previous_\$STAMP"
+    cp -R "\$PENDING_DIR/shaders" "\$tmp"
+    if [ -e "\$TARGET_DIR/shaders" ] || [ -L "\$TARGET_DIR/shaders" ]; then
+        mv "\$TARGET_DIR/shaders" "\$previous"
+    fi
+    mv "\$tmp" "\$TARGET_DIR/shaders"
+    mv "\$PENDING_DIR/shaders" "\$PENDING_DIR/shaders.applied_\$STAMP"
+fi
+EOF
+    chmod +x "$worker"
+}
+
+start_ghostty_apply_worker() {
+    if [[ "$GHOSTTY_DEFER_WORKER_STARTED" == true ]]; then
+        return
+    fi
+
+    write_ghostty_apply_worker
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would launch deferred Ghostty applier after Ghostty exits"
+    else
+        nohup "$CORTEX_CONFIG_HOME/apply-pending-ghostty.sh" >/tmp/cortex-dots-ghostty-apply.log 2>&1 &
+        echo "  → Ghostty config pendiente: se aplicará automáticamente cuando Ghostty se cierre"
+    fi
+    GHOSTTY_DEFER_WORKER_STARTED=true
+}
+
+defer_ghostty_target() {
+    local src="$1"
+    local dst="$2"
+    local pending_name
+    pending_name="$(basename "$dst")"
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would stage pending Ghostty $pending_name from $src"
+        start_ghostty_apply_worker
+        return
+    fi
+
+    mkdir -p "$PENDING_GHOSTTY_DIR"
+    if [[ -d "$src" ]]; then
+        local tmp="$PENDING_GHOSTTY_DIR/${pending_name}.tmp.$$"
+        if [[ -e "$tmp" || -L "$tmp" ]]; then
+            mv "$tmp" "${tmp}.stale_${TIMESTAMP}.$$"
+        fi
+        cp -R "$src" "$tmp"
+        if [[ -e "$PENDING_GHOSTTY_DIR/$pending_name" || -L "$PENDING_GHOSTTY_DIR/$pending_name" ]]; then
+            mv "$PENDING_GHOSTTY_DIR/$pending_name" "$PENDING_GHOSTTY_DIR/${pending_name}.previous_${TIMESTAMP}.$$"
+        fi
+        mv "$tmp" "$PENDING_GHOSTTY_DIR/$pending_name"
+    else
+        local tmp="$PENDING_GHOSTTY_DIR/.tmp.${pending_name}.$$"
+        cp "$src" "$tmp"
+        mv -f "$tmp" "$PENDING_GHOSTTY_DIR/$pending_name"
+    fi
+
+    start_ghostty_apply_worker
 }
 
 run_or_plan() {
@@ -457,11 +554,13 @@ install_target() {
             echo "  → Would atomically copy $src → $dst"
         fi
         if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
-            echo "  ⚠️  Ghostty está corriendo; se omitiría $dst para evitar reload/crash"
+            echo "  ⚠️  Ghostty está corriendo; se dejaría $dst pendiente y se aplicaría automáticamente al cerrar Ghostty"
+            defer_ghostty_target "$src" "$dst"
         fi
     elif [[ "$INSTALL_MODE" == "symlink" ]]; then
         if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
-            echo "  ⚠️  Ghostty está corriendo; se omite $dst para evitar reload/crash. Cerrá Ghostty y re-ejecutá install.sh para actualizarlo."
+            echo "  ⚠️  Ghostty está corriendo; dejando $dst pendiente para evitar reload/crash"
+            defer_ghostty_target "$src" "$dst"
             return
         fi
         mkdir -p "$(dirname "$dst")"
@@ -474,9 +573,10 @@ install_target() {
 
         if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
             if [[ "$GHOSTTY_LIVE_WARNING_SHOWN" == false ]]; then
-                echo "  ⚠️  Ghostty está corriendo; se omiten configs de Ghostty para evitar reload/crash. Cerrá Ghostty y re-ejecutá install.sh para actualizarlas."
+                echo "  ⚠️  Ghostty está corriendo; dejando configs pendientes para evitar reload/crash"
                 GHOSTTY_LIVE_WARNING_SHOWN=true
             fi
+            defer_ghostty_target "$src" "$dst"
             return
         fi
 
