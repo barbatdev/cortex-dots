@@ -1,5 +1,6 @@
-# Fuente primaria: Nerd Font oficial. Podés cambiarla localmente si instalás una variante custom.
-font-family = FiraCode Nerd Font
+# Fuente primaria: Nerd Font oficial. En Linux verificá el nombre con:
+#   fc-match "FiraCode Nerd Font Mono"
+font-family = FiraCode Nerd Font Mono
 font-size = 14
 
 # Paleta Cortex warm/slate
@@ -30,7 +31,7 @@ palette = 13=#C4B5FD
 palette = 14=#7DD3FC
 palette = 15=#FFFFFF
 
-# Transparencia
+# Transparencia: requiere compositor/desktop con soporte alpha en Linux.
 background-opacity = 0.95
 unfocused-split-opacity = 0.85
 
@@ -38,21 +39,18 @@ unfocused-split-opacity = 0.85
 window-decoration = true
 window-padding-balance = true
 window-step-resize = false
-macos-titlebar-style = tabs
 window-padding-x = 4
 window-padding-y = 2
 
 # Cursor
 cursor-style = block_hollow
 
-# Shaders desactivados en modo trabajo remoto: reducen legibilidad en multiplexers.
+# Shaders opt-in: descomentá una línea si tu GPU/driver lo soporta bien.
 # custom-shader = shaders/cursor_smear_soft.glsl
 
 # Integración con shell
+command = zsh
 shell-integration = zsh
-
-# Option izquierdo como Alt para TUIs; Option derecho conserva tildes/ñ.
-macos-option-as-alt = left
 
 # Comportamiento
 scrollback-limit = 10000

@@ -11,7 +11,6 @@ Mejoras identificadas en dotfiles externos de referencia.
 
 ## Media prioridad
 
-- [x] **`macos-option-as-alt = left` en Ghostty** — Alt izquierdo como meta key, Alt derecho para tildes y ñ.
 - [x] **`right_format` en Starship** — cmd_duration y time alineados al extremo derecho.
 - [x] **`atuin`** — historial de zsh con SQLite y TUI avanzada en Ctrl+R.
 
