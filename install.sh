@@ -359,6 +359,9 @@ if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
     else
         mkdir -p "$(dirname "$CUSTOM_FONT")"
         cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$CUSTOM_FONT"
+        if [[ "$PLATFORM" == "Linux" ]] && command -v fc-cache &>/dev/null; then
+            fc-cache -f "$(dirname "$CUSTOM_FONT")" >/dev/null 2>&1 || true
+        fi
         echo "  ✓ Optional custom font installed"
     fi
 else
