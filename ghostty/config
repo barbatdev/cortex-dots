@@ -1,6 +1,6 @@
-# Fuente primaria: Nerd Font oficial. En Linux verificá el nombre con:
-#   fc-match "FiraCode Nerd Font Mono"
-font-family = FiraCode Nerd Font Mono
+# Fuente primaria: variante Beard. En Linux verificá el nombre con:
+#   fc-match "FiraCode Nerd Font Mono Beard"
+font-family = FiraCode Nerd Font Mono Beard
 font-size = 14
 
 # Paleta Cortex warm/slate

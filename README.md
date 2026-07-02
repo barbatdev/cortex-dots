@@ -90,7 +90,7 @@ Never commit private env files or machine-specific overrides.
 
 ## Fonts
 
-The OSS snapshot uses the official `FiraCode Nerd Font` installed by Homebrew when available. A previously bundled custom font binary is intentionally not included because downstream users should verify font licensing and branding assets themselves.
+The Ghostty config expects `FiraCode Nerd Font Mono Beard`. The font binary is intentionally not bundled because downstream users should verify font licensing and branding assets themselves.
 
 If you want a custom font, install it manually and update `ghostty/config` and `starship/starship.toml` locally.
 
@@ -110,7 +110,7 @@ Font names vary by distro/package. Verify the installed name before changing
 `ghostty/config`:
 
 ```bash
-fc-match "FiraCode Nerd Font Mono"
+fc-match "FiraCode Nerd Font Mono Beard"
 fc-list | grep -i "FiraCode"
 ```
 
