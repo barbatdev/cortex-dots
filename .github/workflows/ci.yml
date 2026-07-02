@@ -43,7 +43,6 @@ jobs:
             claude/statusline.sh
             zsh/scripts/*.sh
             scripts/*.sh
-            sketchybar/**/*.sh
           )
           for file in "${bash_files[@]}"; do
             [[ -f "$file" ]] || continue
