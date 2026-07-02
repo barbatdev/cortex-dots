@@ -90,9 +90,9 @@ Never commit private env files or machine-specific overrides.
 
 ## Fonts
 
-The Ghostty config expects `FiraCode Nerd Font Mono Beard`. The font binary is intentionally not bundled because downstream users should verify font licensing and branding assets themselves.
+The Ghostty config expects `FiraCode Nerd Font Mono Beard`. The installer bundles and installs `fonts/FiraCodeNerdFontMonoBeard-Reg.ttf` so Linux and macOS users get the same font name.
 
-If you want a custom font, install it manually and update `ghostty/config` and `starship/starship.toml` locally.
+If you want a different font, install it manually and update `ghostty/config` and `starship/starship.toml` locally.
 
 ## Ghostty On Linux
 
