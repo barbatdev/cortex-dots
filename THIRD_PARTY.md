@@ -1,13 +1,13 @@
 # Third-Party Notices
 
-This repository configures or integrates with third-party tools but does not vendor their source code.
+This repository configures or integrates with third-party tools. It vendors one terminal font file for a consistent Ghostty experience.
 
 | Tool | Purpose | License |
 | --- | --- | --- |
 | Ghostty | terminal configuration | See upstream project |
 | Starship | shell prompt | See upstream project |
 | Herdr | terminal multiplexer | See upstream project |
-| FiraCode Nerd Font | optional terminal font | See upstream Nerd Fonts and Fira Code licenses |
+| FiraCode Nerd Font Mono Beard | bundled terminal font | See upstream Nerd Fonts and Fira Code licenses |
 | Claude Code, OpenCode | AI CLI tools | See each upstream project |
 
-No custom font binary or private brand asset is included in this OSS snapshot.
+The bundled font file is `fonts/FiraCodeNerdFontMonoBeard-Reg.ttf`.
