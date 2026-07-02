@@ -5,6 +5,9 @@ set -e
 DOTFILES="$(cd "$(dirname "$0")" && pwd)"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 DRY_RUN=false
+CHECK_MODE=false
+INSTALL_MODE="copy"
+CORTEX_CONFIG_HOME="${CORTEX_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/cortex-dots}"
 
 case "$(uname -s)" in
     Darwin)
@@ -27,11 +30,25 @@ case "$(uname -s)" in
         ;;
 esac
 
-if [[ "${1:-}" == "--dry-run" ]]; then
-    DRY_RUN=true
-fi
+for arg in "$@"; do
+    case "$arg" in
+        --check)
+            CHECK_MODE=true
+            ;;
+        --dry-run)
+            DRY_RUN=true
+            ;;
+        --symlink)
+            INSTALL_MODE="symlink"
+            ;;
+        *)
+            echo "Usage: $0 [--check] [--dry-run] [--symlink]"
+            exit 1
+            ;;
+    esac
+done
 
-if [[ "${1:-}" == "--check" ]]; then
+if [[ "$CHECK_MODE" == true ]]; then
     WARNINGS=0
     CRITICAL_FAILURES=0
 
@@ -76,7 +93,7 @@ if [[ "${1:-}" == "--check" ]]; then
         fi
     }
 
-    check_symlink_target() {
+    check_install_target() {
         local src="$1"
         local dst="$2"
 
@@ -86,12 +103,12 @@ if [[ "${1:-}" == "--check" ]]; then
             local current
             current="$(readlink "$dst")"
             if [[ "$current" == "$src" ]]; then
-                pass "symlink ok: $dst -> $src"
+                pass "target ok (symlink): $dst -> $src"
             else
                 warn "symlink points elsewhere: $dst -> $current (expected $src)"
             fi
         elif [[ -e "$dst" ]]; then
-            warn "existing non-symlink would be backed up by install: $dst"
+            pass "target exists (copy install): $dst"
         else
             warn "dotfile target not installed yet: $dst"
         fi
@@ -201,22 +218,22 @@ PY
     fi
 
     echo ""
-    echo "checking symlink targets"
-    check_symlink_target "$DOTFILES/zsh/zshrc" "$HOME/.zshrc"
-    check_symlink_target "$DOTFILES/npm/npmrc" "$HOME/.npmrc"
-    check_symlink_target "$DOTFILES/pnpm/rc" "$PNPM_CONFIG_TARGET"
-    check_symlink_target "$DOTFILES/bun/bunfig.toml" "$HOME/.bunfig.toml"
-    check_symlink_target "$DOTFILES/uv/uv.toml" "$HOME/.config/uv/uv.toml"
-    check_symlink_target "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
-    check_symlink_target "$DOTFILES/herdr/config.toml" "$HOME/.config/herdr/config.toml"
-    check_symlink_target "$DOTFILES/ghostty/config" "$HOME/.config/ghostty/config"
-    check_symlink_target "$DOTFILES/ghostty/shaders" "$HOME/.config/ghostty/shaders"
-    check_symlink_target "$DOTFILES/herdr/config.toml" "$HOME/.config/herdr/config.toml"
-    check_symlink_target "$DOTFILES/opencode/tui.json" "$HOME/.config/opencode/tui.json"
-    check_symlink_target "$DOTFILES/opencode/themes" "$HOME/.config/opencode/themes"
-    check_symlink_target "$DOTFILES/claude/statusline.sh" "$HOME/.claude/statusline.sh"
-    check_symlink_target "$DOTFILES/claude/themes" "$HOME/.claude/themes"
-    check_symlink_target "$DOTFILES/lazygit/config.yml" "$HOME/.config/lazygit/config.yml"
+    echo "checking installed targets"
+    check_install_target "$DOTFILES/zsh/zshrc" "$HOME/.zshrc"
+    check_install_target "$DOTFILES/zsh/scripts" "$CORTEX_CONFIG_HOME/zsh/scripts"
+    check_install_target "$DOTFILES/npm/npmrc" "$HOME/.npmrc"
+    check_install_target "$DOTFILES/pnpm/rc" "$PNPM_CONFIG_TARGET"
+    check_install_target "$DOTFILES/bun/bunfig.toml" "$HOME/.bunfig.toml"
+    check_install_target "$DOTFILES/uv/uv.toml" "$HOME/.config/uv/uv.toml"
+    check_install_target "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
+    check_install_target "$DOTFILES/herdr/config.toml" "$HOME/.config/herdr/config.toml"
+    check_install_target "$DOTFILES/ghostty/config" "$HOME/.config/ghostty/config"
+    check_install_target "$DOTFILES/ghostty/shaders" "$HOME/.config/ghostty/shaders"
+    check_install_target "$DOTFILES/opencode/tui.json" "$HOME/.config/opencode/tui.json"
+    check_install_target "$DOTFILES/opencode/themes" "$HOME/.config/opencode/themes"
+    check_install_target "$DOTFILES/claude/statusline.sh" "$HOME/.claude/statusline.sh"
+    check_install_target "$DOTFILES/claude/themes" "$HOME/.claude/themes"
+    check_install_target "$DOTFILES/lazygit/config.yml" "$HOME/.config/lazygit/config.yml"
 
     echo ""
     echo "checking syntax"
@@ -246,11 +263,6 @@ PY
     exit 0
 fi
 
-if [[ "${1:-}" != "" && "${1:-}" != "--dry-run" ]]; then
-    echo "Usage: $0 [--check|--dry-run]"
-    exit 1
-fi
-
 echo ""
 echo "  ╔══════════════════════════════════════╗"
 echo "  ║      dotfiles — Instalador           ║"
@@ -258,9 +270,11 @@ echo "  ╚═══════════════════════
 echo ""
 
 if [[ "$DRY_RUN" == true ]]; then
-    echo "DRY RUN: no files, packages, services, symlinks, chmods, or local config will be changed."
+    echo "DRY RUN: no files, packages, services, install targets, chmods, or local config will be changed."
     echo ""
 fi
+
+echo "Install mode: $INSTALL_MODE"
 
 run_or_plan() {
     local message="$1"
@@ -361,6 +375,9 @@ backup_if_exists() {
         local backup="${src}.bak_${TIMESTAMP}"
         if [[ "$DRY_RUN" == true ]]; then
             echo "  → Would backup $src to $backup"
+        elif [[ -d "$src" ]]; then
+            cp -R "$src" "$backup"
+            echo "  → Backup: $backup"
         else
             cp "$src" "$backup"
             echo "  → Backup: $backup"
@@ -369,6 +386,7 @@ backup_if_exists() {
 }
 
 backup_if_exists "$HOME/.zshrc"
+backup_if_exists "$CORTEX_CONFIG_HOME/zsh/scripts"
 backup_if_exists "$HOME/.npmrc"
 backup_if_exists "$PNPM_CONFIG_TARGET"
 backup_if_exists "$HOME/.bunfig.toml"
@@ -383,76 +401,101 @@ backup_if_exists "$HOME/.claude/statusline.sh"
 backup_if_exists "$HOME/.claude/themes"
 backup_if_exists "$HOME/.config/lazygit/config.yml"
 
-# --- Crear symlinks ---
+# --- Instalar configs ---
 echo ""
-echo "🔗 Creando symlinks..."
+echo "🔗 Instalando configs ($INSTALL_MODE)..."
 
-create_symlink() {
+install_target() {
     local src="$1"
     local dst="$2"
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would symlink $dst → $src"
-    else
+        if [[ "$INSTALL_MODE" == "symlink" ]]; then
+            echo "  → Would symlink $dst → $src"
+        else
+            echo "  → Would copy $src → $dst"
+        fi
+    elif [[ "$INSTALL_MODE" == "symlink" ]]; then
         mkdir -p "$(dirname "$dst")"
         # -n evita que ln dereferencie un symlink-a-directorio existente y cree
         # un link adentro (caso ghostty/shaders → loop shaders/shaders)
         ln -sfn "$src" "$dst"
         echo "  ✓ $dst → $src"
+    else
+        mkdir -p "$(dirname "$dst")"
+        rm -rf "$dst"
+        if [[ -d "$src" ]]; then
+            cp -R "$src" "$dst"
+        else
+            cp "$src" "$dst"
+        fi
+        echo "  ✓ $dst ← $src"
     fi
 }
 
-create_symlink "$DOTFILES/zsh/zshrc"              "$HOME/.zshrc"
-create_symlink "$DOTFILES/npm/npmrc"               "$HOME/.npmrc"
-create_symlink "$DOTFILES/pnpm/rc"                 "$PNPM_CONFIG_TARGET"
-create_symlink "$DOTFILES/bun/bunfig.toml"         "$HOME/.bunfig.toml"
-create_symlink "$DOTFILES/uv/uv.toml"              "$HOME/.config/uv/uv.toml"
-create_symlink "$DOTFILES/starship/starship.toml"  "$HOME/.config/starship.toml"
-create_symlink "$DOTFILES/herdr/config.toml"       "$HOME/.config/herdr/config.toml"
-create_symlink "$DOTFILES/ghostty/config"          "$HOME/.config/ghostty/config"
-create_symlink "$DOTFILES/ghostty/shaders"         "$HOME/.config/ghostty/shaders"
-create_symlink "$DOTFILES/herdr/config.toml"       "$HOME/.config/herdr/config.toml"
-create_symlink "$DOTFILES/opencode/tui.json"       "$HOME/.config/opencode/tui.json"
-create_symlink "$DOTFILES/opencode/themes"         "$HOME/.config/opencode/themes"
-run_or_plan "chmod +x $DOTFILES/claude/statusline.sh" chmod +x "$DOTFILES/claude/statusline.sh"
-create_symlink "$DOTFILES/claude/statusline.sh"    "$HOME/.claude/statusline.sh"
-create_symlink "$DOTFILES/claude/themes"           "$HOME/.claude/themes"
-create_symlink "$DOTFILES/lazygit/config.yml"      "$HOME/.config/lazygit/config.yml"
+install_target "$DOTFILES/zsh/zshrc"              "$HOME/.zshrc"
+install_target "$DOTFILES/zsh/scripts"            "$CORTEX_CONFIG_HOME/zsh/scripts"
+install_target "$DOTFILES/npm/npmrc"              "$HOME/.npmrc"
+install_target "$DOTFILES/pnpm/rc"                "$PNPM_CONFIG_TARGET"
+install_target "$DOTFILES/bun/bunfig.toml"        "$HOME/.bunfig.toml"
+install_target "$DOTFILES/uv/uv.toml"             "$HOME/.config/uv/uv.toml"
+install_target "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
+install_target "$DOTFILES/herdr/config.toml"      "$HOME/.config/herdr/config.toml"
+install_target "$DOTFILES/ghostty/config"         "$HOME/.config/ghostty/config"
+install_target "$DOTFILES/ghostty/shaders"        "$HOME/.config/ghostty/shaders"
+install_target "$DOTFILES/opencode/tui.json"      "$HOME/.config/opencode/tui.json"
+install_target "$DOTFILES/opencode/themes"        "$HOME/.config/opencode/themes"
+install_target "$DOTFILES/claude/statusline.sh"   "$HOME/.claude/statusline.sh"
+run_or_plan "chmod +x $HOME/.claude/statusline.sh" chmod +x "$HOME/.claude/statusline.sh"
+install_target "$DOTFILES/claude/themes"          "$HOME/.claude/themes"
+install_target "$DOTFILES/lazygit/config.yml"     "$HOME/.config/lazygit/config.yml"
 
 # --- AI CLI installation (optional) ---
 
-# Claude Code
-if ! command -v claude &>/dev/null; then
-    echo ""
-    read -p "  ¿Instalar Claude Code? (y/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "  → Instalando Claude Code..."
-        curl -fsSL https://claude.ai/install.sh | bash
-    fi
-fi
+install_ai_cli_if_requested() {
+    local command_name="$1"
+    local display_name="$2"
+    local install_url="$3"
 
-# OpenCode
-if ! command -v opencode &>/dev/null; then
+    if command -v "$command_name" &>/dev/null; then
+        echo "  ✓ $display_name ya instalado"
+        return
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would ask to install $display_name from $install_url"
+        return
+    fi
+
+    if [[ ! -t 0 ]]; then
+        echo "  ⚠️  $display_name no está instalado; se omite prompt porque stdin no es interactivo"
+        return
+    fi
+
     echo ""
-    read -p "  ¿Instalar OpenCode? (y/N) " -n 1 -r
+    read -p "  ¿Instalar $display_name? (y/N) " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "  → Instalando OpenCode..."
-        curl -fsSL https://opencode.ai/install | bash
+        echo "  → Instalando $display_name..."
+        curl -fsSL "$install_url" | bash
     fi
-fi
+}
+
+install_ai_cli_if_requested claude "Claude Code" "https://claude.ai/install.sh"
+install_ai_cli_if_requested opencode "OpenCode" "https://opencode.ai/install"
 
 # --- Configuración local ---
 echo ""
-if [[ ! -f "$DOTFILES/local/env.zsh" ]]; then
+if [[ ! -f "$CORTEX_CONFIG_HOME/local/env.zsh" ]]; then
     if [[ "$DRY_RUN" == true ]]; then
-        echo "📝 Would create local/env.zsh from local/env.zsh.example"
+        echo "📝 Would create $CORTEX_CONFIG_HOME/local"
+        echo "📝 Would create $CORTEX_CONFIG_HOME/local/env.zsh from local/env.zsh.example"
     else
-        cp "$DOTFILES/local/env.zsh.example" "$DOTFILES/local/env.zsh"
-        echo "📝 Creado local/env.zsh desde el ejemplo — editalo con tus paths"
+        mkdir -p "$CORTEX_CONFIG_HOME/local"
+        cp "$DOTFILES/local/env.zsh.example" "$CORTEX_CONFIG_HOME/local/env.zsh"
+        echo "📝 Creado $CORTEX_CONFIG_HOME/local/env.zsh desde el ejemplo — editalo con tus paths"
     fi
 else
-    echo "✓ local/env.zsh ya existe"
+    echo "✓ $CORTEX_CONFIG_HOME/local/env.zsh ya existe"
 fi
 
 # --- Verificación final ---
@@ -465,9 +508,8 @@ fi
 echo ""
 echo "  Próximos pasos:"
 echo "  1. Abrí una nueva tab en Ghostty para cargar el nuevo profile"
-echo "  2. Editá local/env.zsh con tus paths personales"
+echo "  2. Editá $CORTEX_CONFIG_HOME/local/env.zsh con tus paths personales"
 echo "  3. Ghostty usa FiraCode Nerd Font; configurá una fuente custom opcional en local si querés"
-echo "  4. Si macOS bloqueó servicios, habilitá Accessibility y corré los fallbacks impresos arriba"
 echo ""
 echo "  Para medir el load time:"
 echo "  \$ time zsh -i -c exit"

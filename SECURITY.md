@@ -8,8 +8,8 @@ Do not open public issues for secrets, credential exposure, or command-injection
 
 ## Scope
 
-This repository contains dotfiles and installer scripts. Security-sensitive areas include shell startup files, package-manager defaults, symlink creation, macOS service startup, and AI CLI helper scripts.
+This repository contains dotfiles and installer scripts. Security-sensitive areas include shell startup files, package-manager defaults, copy/symlink installation, and AI CLI helper scripts.
 
 ## Local Secrets
 
-Do not commit secrets or machine-specific values. Use `local/env.zsh`, which is intentionally gitignored.
+Do not commit secrets or machine-specific values. Use `~/.config/cortex-dots/local/env.zsh`.

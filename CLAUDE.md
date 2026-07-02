@@ -33,17 +33,17 @@ dotfiles/
 │       ├── pcsoft-helpers.zsh   # is-pcsoft-forbidden, is-pcsoft-editable
 │       ├── screenshots.zsh      # ss, last, ssd, imgclip
 │       └── herdr-helpers.zsh    # ta, tn, tk, tl, tdev
-├── starship/starship.toml    # Prompt Gruvbox Dark → symlink a ~/.config/starship.toml
-├── ghostty/config            # Terminal → symlink a ~/.config/ghostty/config
-├── herdr/config.toml         # Multiplexor → symlink a ~/.config/herdr/config.toml
+├── starship/starship.toml    # Prompt Gruvbox Dark → ~/.config/starship.toml
+├── ghostty/config            # Terminal → ~/.config/ghostty/config
+├── herdr/config.toml         # Multiplexor → ~/.config/herdr/config.toml
 ├── local/
-│   └── env.zsh.example       # Template para local/env.zsh (gitignored)
+│   └── env.zsh.example       # Template para ~/.config/cortex-dots/local/env.zsh
 └── install.sh                # Instalador
 ```
 
 **Flujo de carga del zshrc:** Las secciones están separadas por `#region`/`#endregion`. El orden importa: Brew → PATH → Zsh options → Editor → Env vars → Aliases → Source scripts → Local overrides → Starship → Welcome.
 
-**`local/env.zsh`** está gitignored y contiene paths personales, tokens y overrides de variables de entorno (`SCREENSHOTS_DIR`, `WORKSPACE_DIR`, `WORK_PROJECTS_DIR`). Se genera desde `env.zsh.example` en la primera instalación.
+**`~/.config/cortex-dots/local/env.zsh`** contiene paths personales, tokens y overrides de variables de entorno (`SCREENSHOTS_DIR`, `WORKSPACE_DIR`, `WORK_PROJECTS_DIR`). Se genera desde `env.zsh.example` en la primera instalación.
 
 ## Múltiples identidades GitHub
 
@@ -57,8 +57,8 @@ Los helpers en `git-helpers.zsh` configuran la identidad local del repo Y actual
 
 - Los scripts `.zsh` usan `#region`/`#endregion` para agrupar secciones lógicas.
 - Cada función pública en los scripts debe tener un comentario explicando su uso.
-- Variables de entorno con defaults se definen como `${VAR:-default}` para permitir override desde `local/env.zsh`.
-- `install.sh` usa `set -e` y hace backup de configs existentes antes de crear symlinks — mantener este comportamiento al agregar nuevas configs.
+- Variables de entorno con defaults se definen como `${VAR:-default}` para permitir override desde `~/.config/cortex-dots/local/env.zsh`.
+- `install.sh` usa `set -e` y hace backup de configs existentes antes de copiar o linkear configs — mantener este comportamiento al agregar nuevas configs.
 
 ## Agregar una nueva configuración
 
