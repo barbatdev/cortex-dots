@@ -1,11 +1,11 @@
 # Neovim
 
 Estado documentado el 2026-06-19. La configuración activa vive por ahora en
-`~/.config/nvim` y parte de una copia directa de `Gentleman.Dots`.
+`~/.config/nvim` y parte de una copia directa de una config comunitaria.
 
 ## Base
 
-- Repo upstream: `https://github.com/Gentleman-Programming/Gentleman.Dots`
+- Base: fork de una config comunitaria de nvim (LazyVim/Snacks)
 - Subdirectorio usado: `GentlemanNvim/nvim`
 - Config local activa: `~/.config/nvim`
 - Backup previo a la migración: `~/.config/nvim.backup-before-gentleman-20260619-183411`
