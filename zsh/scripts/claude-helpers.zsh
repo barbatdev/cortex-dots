@@ -101,15 +101,20 @@ cc() {
         _cmux_sidebar_refresh "$resolved"
         cd "$resolved" && claude --enable-auto-mode --dangerously-skip-permissions
     else
-        # No estamos en tmux: crear sesión
-        local session
-        session="$(_workspace_name_for_path "$resolved")"
-        if tmux has-session -t "$session" 2>/dev/null; then
-            tmux attach -t "$session"
+        # No herdr, no cmux: try tmux as optional fallback
+        if command -v tmux &>/dev/null; then
+            local session
+            session="$(_workspace_name_for_path "$resolved")"
+            if tmux has-session -t "$session" 2>/dev/null; then
+                tmux attach -t "$session"
+            else
+                tmux new-session -d -s "$session"
+                tmux send-keys -t "$session" "cd '$resolved' && claude --enable-auto-mode --dangerously-skip-permissions" Enter
+                tmux attach -t "$session"
+            fi
         else
-            tmux new-session -d -s "$session"
-            tmux send-keys -t "$session" "cd '$resolved' && claude --enable-auto-mode --dangerously-skip-permissions" Enter
-            tmux attach -t "$session"
+            echo "⚠️  Instalá herdr o tmux para sesiones persistentes"
+            cd "$resolved" && claude --enable-auto-mode --dangerously-skip-permissions
         fi
     fi
 }
@@ -164,14 +169,20 @@ oc() {
         _cmux_sidebar_refresh "$resolved"
         cd "$resolved" && eval "$oc_cmd"
     else
-        local session
-        session="$(_workspace_name_for_path "$resolved")"
-        if tmux has-session -t "$session" 2>/dev/null; then
-            tmux attach -t "$session"
+        # No herdr, no cmux: try tmux as optional fallback
+        if command -v tmux &>/dev/null; then
+            local session
+            session="$(_workspace_name_for_path "$resolved")"
+            if tmux has-session -t "$session" 2>/dev/null; then
+                tmux attach -t "$session"
+            else
+                tmux new-session -d -s "$session"
+                tmux send-keys -t "$session" "cd '$resolved' && $oc_cmd" Enter
+                tmux attach -t "$session"
+            fi
         else
-            tmux new-session -d -s "$session"
-            tmux send-keys -t "$session" "cd '$resolved' && $oc_cmd" Enter
-            tmux attach -t "$session"
+            echo "⚠️  Instalá herdr o tmux para sesiones persistentes"
+            cd "$resolved" && eval "$oc_cmd"
         fi
     fi
 }
@@ -225,14 +236,20 @@ ccb() {
         _cmux_sidebar_refresh "$resolved"
         cd "$resolved" && eval "$cc_cmd"
     else
-        local session
-        session="$(_workspace_name_for_path "$resolved")"
-        if tmux has-session -t "$session" 2>/dev/null; then
-            tmux attach -t "$session"
+        # No herdr, no cmux: try tmux as optional fallback
+        if command -v tmux &>/dev/null; then
+            local session
+            session="$(_workspace_name_for_path "$resolved")"
+            if tmux has-session -t "$session" 2>/dev/null; then
+                tmux attach -t "$session"
+            else
+                tmux new-session -d -s "$session"
+                tmux send-keys -t "$session" "cd '$resolved' && $cc_cmd" Enter
+                tmux attach -t "$session"
+            fi
         else
-            tmux new-session -d -s "$session"
-            tmux send-keys -t "$session" "cd '$resolved' && $cc_cmd" Enter
-            tmux attach -t "$session"
+            echo "⚠️  Instalá herdr o tmux para sesiones persistentes"
+            cd "$resolved" && eval "$cc_cmd"
         fi
     fi
 }
@@ -286,14 +303,20 @@ ocb() {
         _cmux_sidebar_refresh "$resolved"
         cd "$resolved" && eval "$oc_cmd"
     else
-        local session
-        session="$(_workspace_name_for_path "$resolved")"
-        if tmux has-session -t "$session" 2>/dev/null; then
-            tmux attach -t "$session"
+        # No herdr, no cmux: try tmux as optional fallback
+        if command -v tmux &>/dev/null; then
+            local session
+            session="$(_workspace_name_for_path "$resolved")"
+            if tmux has-session -t "$session" 2>/dev/null; then
+                tmux attach -t "$session"
+            else
+                tmux new-session -d -s "$session"
+                tmux send-keys -t "$session" "cd '$resolved' && $oc_cmd" Enter
+                tmux attach -t "$session"
+            fi
         else
-            tmux new-session -d -s "$session"
-            tmux send-keys -t "$session" "cd '$resolved' && $oc_cmd" Enter
-            tmux attach -t "$session"
+            echo "⚠️  Instalá herdr o tmux para sesiones persistentes"
+            cd "$resolved" && eval "$oc_cmd"
         fi
     fi
 }
@@ -345,14 +368,20 @@ ccx() {
     elif [[ -n "$TMUX" ]]; then
         cd "$resolved" && echo "$context" | claude
     else
-        local session
-        session="$(_workspace_name_for_path "$resolved")"
-        if tmux has-session -t "$session" 2>/dev/null; then
-            tmux attach -t "$session"
+        # No herdr, no cmux: try tmux as optional fallback
+        if command -v tmux &>/dev/null; then
+            local session
+            session="$(_workspace_name_for_path "$resolved")"
+            if tmux has-session -t "$session" 2>/dev/null; then
+                tmux attach -t "$session"
+            else
+                tmux new-session -d -s "$session"
+                tmux send-keys -t "$session" "cd '$resolved' && echo ${(q)context} | claude" Enter
+                tmux attach -t "$session"
+            fi
         else
-            tmux new-session -d -s "$session"
-            tmux send-keys -t "$session" "cd '$resolved' && echo ${(q)context} | claude" Enter
-            tmux attach -t "$session"
+            echo "⚠️  Instalá herdr o tmux para sesiones persistentes"
+            cd "$resolved" && echo "$context" | claude
         fi
     fi
 }
