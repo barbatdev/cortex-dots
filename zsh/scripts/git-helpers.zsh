@@ -38,7 +38,7 @@ clone-personaldev() {
 # Configurar identidad workdev (trabajo/empresa) en el repo actual
 git-workdev() {
     git config user.name "${GIT_WORK_NAME:-Your Name}"
-    git config user.email "${GIT_WORK_EMAIL:?Set GIT_WORK_EMAIL in local/env.zsh}"
+    git config user.email "${GIT_WORK_EMAIL:?Set GIT_WORK_EMAIL in ~/.config/cortex-dots/local/env.zsh}"
 
     # Actualizar remote si apunta a github.com o alias viejo
     local url
@@ -56,7 +56,7 @@ git-workdev() {
 # Configurar identidad personaldev (cuenta personal) en el repo actual
 git-personaldev() {
     git config user.name "${GIT_PERSONAL_NAME:-Your Name}"
-    git config user.email "${GIT_PERSONAL_EMAIL:?Set GIT_PERSONAL_EMAIL in local/env.zsh}"
+    git config user.email "${GIT_PERSONAL_EMAIL:?Set GIT_PERSONAL_EMAIL in ~/.config/cortex-dots/local/env.zsh}"
 
     # Actualizar remote si apunta a github.com o alias viejo
     local url

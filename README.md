@@ -2,7 +2,7 @@
 
 Open-source dotfiles for a terminal workflow centered on Ghostty, Zsh, Starship, Herdr, Claude Code, and OpenCode.
 
-The repo is intentionally generic. Private paths, tokens, emails, hostnames, project aliases, and machine-specific overrides belong in `local/env.zsh`, which is gitignored and generated from `local/env.zsh.example`.
+The repo is intentionally generic. Private paths, tokens, emails, hostnames, project aliases, and machine-specific overrides belong in `~/.config/cortex-dots/local/env.zsh`, which is generated from `local/env.zsh.example`.
 
 ## Install
 
@@ -12,10 +12,20 @@ cd ~/.cortex/cortex-dots
 bash install.sh
 ```
 
+The default install copies files into your home/config directories. The cloned
+repo is not required at runtime after installation.
+
+For dotfiles development, keep live links back to the checkout:
+
+```bash
+bash install.sh --symlink
+```
+
 Preview without changing files:
 
 ```bash
 bash install.sh --dry-run
+bash install.sh --dry-run --symlink
 ```
 
 Audit the local environment without installing packages or creating symlinks:
@@ -49,14 +59,14 @@ The shell profile uses safe, env-driven defaults:
 | `cortex` | `$CORTEX_ROOT` (`~/.cortex/cortex`) |
 | `dotfiles` | `$CORTEX_DOTFILES_DIR` (`~/.cortex/cortex-dots`) |
 
-Override any of these in `local/env.zsh`.
+Override any of these in `~/.config/cortex-dots/local/env.zsh`.
 
 ## Private Config
 
-Copy or edit the generated local file:
+Edit the generated local file:
 
 ```bash
-cp local/env.zsh.example local/env.zsh
+${EDITOR:-vi} ~/.config/cortex-dots/local/env.zsh
 ```
 
 Typical private values:
@@ -76,13 +86,37 @@ Typical private values:
 | `GIT_PERSONAL_NAME`, `GIT_PERSONAL_EMAIL` | personal git identity |
 | `OPENCODE_DEFAULT_FLAGS` | default flags for `oc` |
 
-Never commit `local/env.zsh`.
+Never commit private env files or machine-specific overrides.
 
 ## Fonts
 
-The OSS snapshot uses the official `FiraCode Nerd Font` installed by Homebrew when available. A previously bundled custom font binary is intentionally not included because downstream users should verify font licensing and branding assets themselves.
+The Ghostty config expects `FiraCode Nerd Font Mono Beard`. The installer bundles and installs `fonts/FiraCodeNerdFontMonoBeard-Reg.ttf` so Linux and macOS users get the same font name.
 
-If you want a custom font, install it manually and update `ghostty/config` and `starship/starship.toml` locally.
+If you want a different font, install it manually and update `ghostty/config` and `starship/starship.toml` locally.
+
+## Ghostty On Linux
+
+The default Ghostty config launches `zsh` so Starship can initialize from
+`~/.zshrc`. If the prompt does not appear, check:
+
+```bash
+command -v ghostty
+command -v zsh
+command -v starship
+zsh -i -c 'command -v starship && echo starship-ok'
+```
+
+Font names vary by distro/package. Verify the installed name before changing
+`ghostty/config`:
+
+```bash
+fc-match "FiraCode Nerd Font Mono Beard"
+fc-list | grep -i "FiraCode"
+```
+
+Transparency depends on your Linux compositor/window manager. Shaders are
+opt-in in `ghostty/config`; uncomment one `custom-shader` line only after
+confirming your GPU/driver handles it well.
 
 ## OSS Audit
 

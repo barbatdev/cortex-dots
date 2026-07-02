@@ -1,6 +1,6 @@
 #region Screenshot Utilities
 # Funciones para manejo de screenshots en macOS
-# Configurable via $SCREENSHOTS_DIR en local/env.zsh
+# Configurable via $SCREENSHOTS_DIR en ~/.config/cortex-dots/local/env.zsh
 
 # Obtener directorio de screenshots
 _screenshots_dir() {
@@ -42,7 +42,7 @@ ss() {
 
     if [[ ! -d "$dir" ]]; then
         echo "⚠️  Directorio no encontrado: $dir"
-        echo "   Configurá SCREENSHOTS_DIR en local/env.zsh"
+        echo "   Configurá SCREENSHOTS_DIR en ~/.config/cortex-dots/local/env.zsh"
         return 1
     fi
 

@@ -3,7 +3,7 @@
 Use this checklist before publishing a snapshot or tagging a release.
 
 1. Start from tracked files on `main` only.
-2. Verify `local/env.zsh`, ignored files, and `.git` history are not included in exported artifacts.
+2. Verify ignored files, generated local config, and `.git` history are not included in exported artifacts.
 3. Run `scripts/oss-audit.sh`.
 4. Run shell syntax checks for `install.sh`, `zsh/zshrc`, `zsh/scripts/*.zsh`, and `scripts/*.sh`.
 5. Validate JSON with `jq`.
