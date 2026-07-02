@@ -298,7 +298,7 @@ install_formula_if_missing() {
             if command -v brew &>/dev/null; then
                 echo "  → Would install $formula ($description) via Homebrew"
             else
-                echo "  → Would skip $formula ($description); Homebrew not available on $PLATFORM"
+                echo "  → Would skip automatic install for $formula ($description); install with your $PLATFORM package manager"
             fi
         elif command -v brew &>/dev/null; then
             echo "  → Instalando $formula ($description)..."
@@ -320,8 +320,6 @@ if [[ "$PLATFORM" == "macOS" ]] && ! command -v brew &>/dev/null; then
         echo "❌ Homebrew no está instalado. Instalá desde https://brew.sh"
         exit 1
     fi
-elif ! command -v brew &>/dev/null; then
-    echo "  ⚠️  Homebrew no está instalado; se omite instalación automática de paquetes"
 fi
 
 install_formula_if_missing starship starship "prompt"
@@ -338,7 +336,19 @@ install_formula_if_missing lazygit lazygit "git TUI"
 echo ""
 echo "📦 Verificando fuentes..."
 
-if ! compgen -G "$FONT_GLOB" >/dev/null; then
+if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would create $(dirname "$CUSTOM_FONT")"
+        echo "  → Would install bundled FiraCode Nerd Font Mono Beard to $CUSTOM_FONT"
+    else
+        mkdir -p "$(dirname "$CUSTOM_FONT")"
+        cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$CUSTOM_FONT"
+        if [[ "$PLATFORM" == "Linux" ]] && command -v fc-cache &>/dev/null; then
+            fc-cache -f "$(dirname "$CUSTOM_FONT")" >/dev/null 2>&1 || true
+        fi
+        echo "  ✓ FiraCode Nerd Font Mono Beard instalada"
+    fi
+elif ! compgen -G "$FONT_GLOB" >/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
         echo "  → Would install FiraCode Nerd Font Beard for $PLATFORM when package manager is available"
     elif [[ "$PLATFORM" == "macOS" ]] && command -v brew &>/dev/null; then
@@ -350,22 +360,6 @@ if ! compgen -G "$FONT_GLOB" >/dev/null; then
     fi
 else
     echo "  ✓ FiraCode Nerd Font Beard ya instalada"
-fi
-
-if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
-    if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would create $(dirname "$CUSTOM_FONT")"
-        echo "  → Would copy optional custom font to $CUSTOM_FONT"
-    else
-        mkdir -p "$(dirname "$CUSTOM_FONT")"
-        cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$CUSTOM_FONT"
-        if [[ "$PLATFORM" == "Linux" ]] && command -v fc-cache &>/dev/null; then
-            fc-cache -f "$(dirname "$CUSTOM_FONT")" >/dev/null 2>&1 || true
-        fi
-        echo "  ✓ Optional custom font installed"
-    fi
-else
-    echo "  - FiraCode Nerd Font Beard no está bundleada; instalala manualmente si Ghostty no la detecta"
 fi
 
 # --- Backup de configs existentes ---
