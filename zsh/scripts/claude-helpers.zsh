@@ -48,8 +48,8 @@ _cortex_use_herdr_runtime() {
     [[ "${CORTEX_MULTIPLEXER:-}" == "herdr" || -n "${HERDR_ENV:-}" ]]
 }
 
-# Abrir Claude Code en tmux
-# Si no está en tmux, crea una sesión nueva
+# Abrir Claude Code en el runtime disponible (Herdr/cmux; tmux opcional)
+# Si no hay multiplexer persistente, ejecuta directo en el directorio objetivo
 cc() {
     local target="${1:-.}"
     local resolved
@@ -119,7 +119,7 @@ cc() {
     fi
 }
 
-# Abrir OpenCode en tmux/cmux
+# Abrir OpenCode en el runtime disponible
 # Mantiene el mismo patrón de uso que cc() pero usando opencode
 oc() {
     local target="${1:-.}"
@@ -321,7 +321,7 @@ ocb() {
     fi
 }
 
-# Abrir Claude Code con contexto inicial en tmux
+# Abrir Claude Code con contexto inicial en el runtime disponible
 ccx() {
     local context="$1"
     local target="${2:-.}"

@@ -6,6 +6,27 @@ DOTFILES="$(cd "$(dirname "$0")" && pwd)"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 DRY_RUN=false
 
+case "$(uname -s)" in
+    Darwin)
+        PLATFORM="macOS"
+        PNPM_CONFIG_TARGET="$HOME/Library/Preferences/pnpm/rc"
+        FONT_GLOB="$HOME/Library/Fonts/FiraCodeNerdFont*"
+        CUSTOM_FONT="$HOME/Library/Fonts/FiraCodeNerdFontMonoBeard-Reg.ttf"
+        ;;
+    Linux)
+        PLATFORM="Linux"
+        PNPM_CONFIG_TARGET="${XDG_CONFIG_HOME:-$HOME/.config}/pnpm/rc"
+        FONT_GLOB="$HOME/.local/share/fonts/FiraCodeNerdFont*"
+        CUSTOM_FONT="$HOME/.local/share/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf"
+        ;;
+    *)
+        PLATFORM="$(uname -s)"
+        PNPM_CONFIG_TARGET="${XDG_CONFIG_HOME:-$HOME/.config}/pnpm/rc"
+        FONT_GLOB="$HOME/.local/share/fonts/FiraCodeNerdFont*"
+        CUSTOM_FONT="$HOME/.local/share/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf"
+        ;;
+esac
+
 if [[ "${1:-}" == "--dry-run" ]]; then
     DRY_RUN=true
 fi
@@ -154,7 +175,7 @@ PY
             check_command lazygit warn
             ;;
         Linux)
-            warn "platform is Linux; installer is macOS-focused, so Homebrew/macOS services are not required for this check"
+            pass "platform supported: Linux"
             check_command bash fail
             check_command zsh warn
             check_command python3 warn
@@ -171,19 +192,19 @@ PY
 
     echo ""
     echo "checking fonts"
-    if [[ -f "$HOME/Library/Fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
+    if [[ -f "$CUSTOM_FONT" ]]; then
         pass "optional custom font installed"
-    elif compgen -G "$HOME/Library/Fonts/FiraCodeNerdFont*" >/dev/null; then
+    elif compgen -G "$FONT_GLOB" >/dev/null; then
         pass "FiraCode Nerd Font present"
     else
-        warn "FiraCode Nerd Font not found in ~/Library/Fonts"
+        warn "FiraCode Nerd Font not found for $PLATFORM"
     fi
 
     echo ""
     echo "checking symlink targets"
     check_symlink_target "$DOTFILES/zsh/zshrc" "$HOME/.zshrc"
     check_symlink_target "$DOTFILES/npm/npmrc" "$HOME/.npmrc"
-    check_symlink_target "$DOTFILES/pnpm/rc" "$HOME/Library/Preferences/pnpm/rc"
+    check_symlink_target "$DOTFILES/pnpm/rc" "$PNPM_CONFIG_TARGET"
     check_symlink_target "$DOTFILES/bun/bunfig.toml" "$HOME/.bunfig.toml"
     check_symlink_target "$DOTFILES/uv/uv.toml" "$HOME/.config/uv/uv.toml"
     check_symlink_target "$DOTFILES/starship/starship.toml" "$HOME/.config/starship.toml"
@@ -260,11 +281,17 @@ install_formula_if_missing() {
 
     if ! command -v "$command_name" &>/dev/null; then
         if [[ "$DRY_RUN" == true ]]; then
-            echo "  → Would install $formula ($description) via Homebrew"
-        else
+            if command -v brew &>/dev/null; then
+                echo "  → Would install $formula ($description) via Homebrew"
+            else
+                echo "  → Would skip $formula ($description); Homebrew not available on $PLATFORM"
+            fi
+        elif command -v brew &>/dev/null; then
             echo "  → Instalando $formula ($description)..."
             [[ -z "$tap" ]] || brew tap "$tap"
             brew install "$formula"
+        else
+            echo "  ⚠️  $command_name no está instalado; instalalo con el package manager de $PLATFORM"
         fi
     else
         echo "  ✓ $command_name ya instalado"
@@ -272,13 +299,15 @@ install_formula_if_missing() {
 }
 
 # --- Verificar dependencias base ---
-if ! command -v brew &>/dev/null; then
+if [[ "$PLATFORM" == "macOS" ]] && ! command -v brew &>/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would require Homebrew before installing packages"
+        echo "  → Would require Homebrew before installing packages on macOS"
     else
         echo "❌ Homebrew no está instalado. Instalá desde https://brew.sh"
         exit 1
     fi
+elif ! command -v brew &>/dev/null; then
+    echo "  ⚠️  Homebrew no está instalado; se omite instalación automática de paquetes"
 fi
 
 install_formula_if_missing starship starship "prompt"
@@ -295,13 +324,15 @@ install_formula_if_missing lazygit lazygit "git TUI"
 echo ""
 echo "📦 Verificando fuentes..."
 
-if ! ls "$HOME/Library/Fonts/FiraCodeNerdFont"* &>/dev/null 2>&1; then
+if ! compgen -G "$FONT_GLOB" >/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would install font-fira-code-nerd-font via Homebrew cask"
-    else
+        echo "  → Would install FiraCode Nerd Font for $PLATFORM when package manager is available"
+    elif [[ "$PLATFORM" == "macOS" ]] && command -v brew &>/dev/null; then
         echo "  → Instalando FiraCode Nerd Font..."
         brew install --cask font-fira-code-nerd-font
         echo "  ✓ FiraCode Nerd Font instalada"
+    else
+        echo "  ⚠️  FiraCode Nerd Font no encontrada; instalala con el package manager de $PLATFORM"
     fi
 else
     echo "  ✓ FiraCode Nerd Font ya instalada"
@@ -309,11 +340,11 @@ fi
 
 if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would create $HOME/Library/Fonts"
-        echo "  → Would copy optional custom font to $HOME/Library/Fonts/FiraCodeNerdFontMonoBeard-Reg.ttf"
+        echo "  → Would create $(dirname "$CUSTOM_FONT")"
+        echo "  → Would copy optional custom font to $CUSTOM_FONT"
     else
-        mkdir -p "$HOME/Library/Fonts"
-        cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$HOME/Library/Fonts/FiraCodeNerdFontMonoBeard-Reg.ttf"
+        mkdir -p "$(dirname "$CUSTOM_FONT")"
+        cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$CUSTOM_FONT"
         echo "  ✓ Optional custom font installed"
     fi
 else
@@ -339,7 +370,7 @@ backup_if_exists() {
 
 backup_if_exists "$HOME/.zshrc"
 backup_if_exists "$HOME/.npmrc"
-backup_if_exists "$HOME/Library/Preferences/pnpm/rc"
+backup_if_exists "$PNPM_CONFIG_TARGET"
 backup_if_exists "$HOME/.bunfig.toml"
 backup_if_exists "$HOME/.config/uv/uv.toml"
 backup_if_exists "$HOME/.config/starship.toml"
@@ -372,7 +403,7 @@ create_symlink() {
 
 create_symlink "$DOTFILES/zsh/zshrc"              "$HOME/.zshrc"
 create_symlink "$DOTFILES/npm/npmrc"               "$HOME/.npmrc"
-create_symlink "$DOTFILES/pnpm/rc"                 "$HOME/Library/Preferences/pnpm/rc"
+create_symlink "$DOTFILES/pnpm/rc"                 "$PNPM_CONFIG_TARGET"
 create_symlink "$DOTFILES/bun/bunfig.toml"         "$HOME/.bunfig.toml"
 create_symlink "$DOTFILES/uv/uv.toml"              "$HOME/.config/uv/uv.toml"
 create_symlink "$DOTFILES/starship/starship.toml"  "$HOME/.config/starship.toml"
