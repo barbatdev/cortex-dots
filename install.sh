@@ -332,12 +332,17 @@ ghostty_running() {
     ps -eo comm=,args= | awk '\$1 == "ghostty" || \$2 == "ghostty" || \$2 ~ /\\/ghostty\$/ { found = 1 } END { exit found ? 0 : 1 }'
 }
 
+wait_seconds=0
+echo "waiting for Ghostty to exit..." >> "\$LOG_FILE"
 while ghostty_running; do
-    echo "waiting for Ghostty to exit..." >> "\$LOG_FILE"
     sleep 1
+    wait_seconds=\$((wait_seconds + 1))
+    if [ \$((wait_seconds % 30)) -eq 0 ]; then
+        echo "still waiting for Ghostty to exit (\${wait_seconds}s)..." >> "\$LOG_FILE"
+    fi
 done
 
-echo "Ghostty exited; applying pending config" >> "\$LOG_FILE"
+echo "Ghostty exited after \${wait_seconds}s; applying pending config" >> "\$LOG_FILE"
 
 mkdir -p "\$TARGET_DIR"
 
