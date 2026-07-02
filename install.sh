@@ -281,7 +281,7 @@ echo "Install mode: $INSTALL_MODE"
 GHOSTTY_LIVE_WARNING_SHOWN=false
 
 ghostty_is_running() {
-    pgrep -x ghostty >/dev/null 2>&1 || pgrep -f '[g]hostty' >/dev/null 2>&1
+    ps -eo comm=,args= | awk '$1 == "ghostty" || $2 == "ghostty" || $2 ~ /\/ghostty$/ { found = 1 } END { exit found ? 0 : 1 }'
 }
 
 run_or_plan() {
@@ -457,9 +457,13 @@ install_target() {
             echo "  → Would atomically copy $src → $dst"
         fi
         if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
-            echo "  ⚠️  Ghostty está corriendo; se usaría escritura atómica para evitar reload parcial"
+            echo "  ⚠️  Ghostty está corriendo; se omitiría $dst para evitar reload/crash"
         fi
     elif [[ "$INSTALL_MODE" == "symlink" ]]; then
+        if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
+            echo "  ⚠️  Ghostty está corriendo; se omite $dst para evitar reload/crash. Cerrá Ghostty y re-ejecutá install.sh para actualizarlo."
+            return
+        fi
         mkdir -p "$(dirname "$dst")"
         # -n evita que ln dereferencie un symlink-a-directorio existente y cree
         # un link adentro (caso ghostty/shaders → loop shaders/shaders)
@@ -468,8 +472,16 @@ install_target() {
     else
         mkdir -p "$(dirname "$dst")"
 
-        if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running && [[ "$GHOSTTY_LIVE_WARNING_SHOWN" == false ]]; then
-            echo "  ⚠️  Ghostty está corriendo; instalando config con reemplazo atómico para evitar reload parcial"
+        if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && ghostty_is_running; then
+            if [[ "$GHOSTTY_LIVE_WARNING_SHOWN" == false ]]; then
+                echo "  ⚠️  Ghostty está corriendo; se omiten configs de Ghostty para evitar reload/crash. Cerrá Ghostty y re-ejecutá install.sh para actualizarlas."
+                GHOSTTY_LIVE_WARNING_SHOWN=true
+            fi
+            return
+        fi
+
+        if [[ "$dst" == "$HOME/.config/ghostty/"* ]] && [[ "$GHOSTTY_LIVE_WARNING_SHOWN" == false ]]; then
+            echo "  → Ghostty no está corriendo; instalando config con reemplazo atómico"
             GHOSTTY_LIVE_WARNING_SHOWN=true
         fi
 
