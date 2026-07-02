@@ -3,10 +3,12 @@
 
 _cmux_sidebar_refresh() {
     local target="${1:-$PWD}"
-    local dotfiles_dir="${_DOTFILES_DIR:-$HOME/dev/personal/cortex-dotfiles}"
+    local dotfiles_dir="${_DOTFILES_DIR:-$CORTEX_DOTFILES_DIR}"
     local script="$dotfiles_dir/zsh/scripts/cmux-sidebar-refresh.sh"
     if [[ -x "$script" ]]; then
         "$script" "$target" >/dev/null 2>&1 || true
+    else
+        : # cmux-sidebar-refresh.sh no está en este repo (externo)
     fi
 }
 
