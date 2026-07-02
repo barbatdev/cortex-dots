@@ -8,3 +8,17 @@ local/env.zsh
 # Backups
 *.bak
 *.backup
+
+# Editor temp files
+*.swp
+*~
+*.swo
+
+# Generic env files
+.env
+
+# Logs
+*.log
+
+# Cache
+.cache/
