@@ -321,7 +321,7 @@ install_starship_if_missing() {
     fi
 
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would install starship to $HOME/.local/bin via official installer"
+        echo "  → Would ask to install starship to $HOME/.local/bin via official installer"
         return
     fi
 
@@ -330,9 +330,22 @@ install_starship_if_missing() {
         return
     fi
 
+    if [[ ! -t 0 ]]; then
+        echo "  ⚠️  starship no está instalado; se omite prompt porque stdin no es interactivo"
+        return
+    fi
+
+    echo ""
+    read -p "  ¿Instalar Starship en $HOME/.local/bin? (y/N) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "  - Starship no instalado; el prompt usará zsh default"
+        return
+    fi
+
     echo "  → Instalando starship en $HOME/.local/bin..."
     mkdir -p "$HOME/.local/bin"
-    curl -sS https://starship.rs/install.sh | sh -s -- -b "$HOME/.local/bin" -y
+    curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 https://starship.rs/install.sh | sh -s -- -b "$HOME/.local/bin" -y
 }
 
 # --- Verificar dependencias base ---
