@@ -212,9 +212,9 @@ PY
     if [[ -f "$CUSTOM_FONT" ]]; then
         pass "optional custom font installed"
     elif compgen -G "$FONT_GLOB" >/dev/null; then
-        pass "FiraCode Nerd Font present"
+        pass "FiraCode Nerd Font Beard present"
     else
-        warn "FiraCode Nerd Font not found for $PLATFORM"
+        warn "FiraCode Nerd Font Beard not found for $PLATFORM"
     fi
 
     echo ""
@@ -340,16 +340,16 @@ echo "📦 Verificando fuentes..."
 
 if ! compgen -G "$FONT_GLOB" >/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would install FiraCode Nerd Font for $PLATFORM when package manager is available"
+        echo "  → Would install FiraCode Nerd Font Beard for $PLATFORM when package manager is available"
     elif [[ "$PLATFORM" == "macOS" ]] && command -v brew &>/dev/null; then
         echo "  → Instalando FiraCode Nerd Font..."
         brew install --cask font-fira-code-nerd-font
         echo "  ✓ FiraCode Nerd Font instalada"
     else
-        echo "  ⚠️  FiraCode Nerd Font no encontrada; instalala con el package manager de $PLATFORM"
+        echo "  ⚠️  FiraCode Nerd Font Beard no encontrada; instalala manualmente en $CUSTOM_FONT"
     fi
 else
-    echo "  ✓ FiraCode Nerd Font ya instalada"
+    echo "  ✓ FiraCode Nerd Font Beard ya instalada"
 fi
 
 if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
@@ -362,7 +362,7 @@ if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
         echo "  ✓ Optional custom font installed"
     fi
 else
-    echo "  - Optional custom font not bundled; using FiraCode Nerd Font"
+    echo "  - FiraCode Nerd Font Beard no está bundleada; instalala manualmente si Ghostty no la detecta"
 fi
 
 # --- Backup de configs existentes ---
@@ -509,7 +509,7 @@ echo ""
 echo "  Próximos pasos:"
 echo "  1. Abrí una nueva tab en Ghostty para cargar el nuevo profile"
 echo "  2. Editá $CORTEX_CONFIG_HOME/local/env.zsh con tus paths personales"
-echo "  3. Ghostty usa FiraCode Nerd Font; configurá una fuente custom opcional en local si querés"
+echo "  3. Ghostty usa FiraCode Nerd Font Mono Beard; instalá esa fuente si Ghostty no la detecta"
 echo ""
 echo "  Para medir el load time:"
 echo "  \$ time zsh -i -c exit"
