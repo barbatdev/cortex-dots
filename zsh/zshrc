@@ -1,5 +1,5 @@
 #region Header
-# Dev Zsh Profile — macOS + Ghostty
+# Dev Zsh Profile — Ghostty + Zsh
 # YOUR_NAME - YOUR_ORG
 #endregion
 
@@ -44,8 +44,6 @@ setopt NO_BEEP
 #region Editor
 if command -v nvim &>/dev/null; then
     export EDITOR="$(command -v nvim)"
-elif command -v micro &>/dev/null; then
-    export EDITOR="$(command -v micro)"
 else
     export EDITOR="nano"
 fi
@@ -222,7 +220,6 @@ if [[ -d "$_SCRIPTS_DIR" ]]; then
     [[ -f "$_SCRIPTS_DIR/git-helpers.zsh" ]]    && source "$_SCRIPTS_DIR/git-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/ssh-helpers.zsh" ]]    && source "$_SCRIPTS_DIR/ssh-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/herdr-helpers.zsh" ]]  && source "$_SCRIPTS_DIR/herdr-helpers.zsh"
-    [[ -f "$_SCRIPTS_DIR/tmux-helpers.zsh" ]]   && source "$_SCRIPTS_DIR/tmux-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/worktree-helpers.zsh" ]] && source "$_SCRIPTS_DIR/worktree-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/agent-state.sh" ]] && source "$_SCRIPTS_DIR/agent-state.sh"
 fi
@@ -300,23 +297,6 @@ help-profile() {
     echo "  ${C}ccd [sub]         ${R}Navegar al Claude workspace"
     echo "  ${C}ccclip <files>    ${R}Copiar código al clipboard"
 
-    echo "\n${T}Tmux — sesiones${R}"
-    echo "  ${C}tcc               ${R}Abrir Claude Code + lazygit (layout automático)"
-    echo "  ${C}tdev              ${R}Sesión con nombre del directorio actual"
-    echo "  ${C}ta [nombre]       ${R}Attach a sesión (o crearla)"
-    echo "  ${C}tn <nombre>       ${R}Nueva sesión con nombre"
-    echo "  ${C}tl                ${R}Listar sesiones activas"
-    echo "  ${C}tk <nombre>       ${R}Matar sesión"
-
-    echo "\n${T}Tmux — keybindings${R}"
-    echo "  ${C}Ctrl+A R          ${R}Recargar config"
-    echo "  ${C}Ctrl+A Space      ${R}Ver todos los keybindings (which-key)"
-    echo "  ${C}Ctrl+A |          ${R}Split vertical"
-    echo "  ${C}Ctrl+A -          ${R}Split horizontal"
-    echo "  ${C}Ctrl+A hjkl       ${R}Navegar entre paneles"
-    echo "  ${C}Ctrl+A Ctrl+S     ${R}Guardar sesiones (resurrect)"
-    echo "  ${C}Ctrl+A Ctrl+R     ${R}Restaurar sesiones (resurrect)"
-    echo "  ${C}Option+G          ${R}Popup flotante (scratch)"
     echo ""
 }
 
