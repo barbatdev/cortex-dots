@@ -6,7 +6,7 @@ if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     exit 1
 fi
 
-forbidden_regex='InnIT|innit|barbatdev|barbat[.]dev|RefactorIA|jbarbat|/home/jbarbat|agent-dev|innit[.]com[.]uy'
+forbidden_regex='InnIT|innit|barbatdev|barbat[.]dev|RefactorIA|jbarbat|agent-dev|innit[.]com[.]uy'
 email_regex='[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}'
 failed=0
 
