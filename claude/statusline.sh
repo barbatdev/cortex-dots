@@ -188,33 +188,36 @@ get_sdd_status() {
   local tasks_summary=""
   local status=""
 
-  if [ -x "$resume_script" ]; then
-    local resume_json
-    resume_json=$("$resume_script" get "$current_dir" 2>/dev/null || true)
-    if [ -n "$resume_json" ]; then
-      status=$(echo "$resume_json" | jq -r '.status // empty' 2>/dev/null)
-      mode=$(echo "$resume_json" | jq -r '.execution_mode // empty' 2>/dev/null)
+  if [ ! -x "$resume_script" ]; then
+    echo "|||" && return
+  fi
 
-      case "$status" in
-        ready)
-          active_spec=$(echo "$resume_json" | jq -r '.feature // empty' 2>/dev/null)
-          local tasks_file
-          tasks_file=$(echo "$resume_json" | jq -r '.tasks_path // empty' 2>/dev/null)
-          if [ -n "$tasks_file" ] && [ -f "$current_dir/$tasks_file" ]; then
-            local done pending
-            done=$(grep -c '^- \[x\]' "$current_dir/$tasks_file" 2>/dev/null || echo 0)
-            pending=$(grep -c '^- \[ \]' "$current_dir/$tasks_file" 2>/dev/null || echo 0)
-            tasks_summary="${done}/${pending}"
-          fi
-          ;;
-        ambiguous_feature)
-          active_spec="ambiguous"
-          ;;
-        incomplete_feature)
-          active_spec="incomplete"
-          ;;
-      esac
-    fi
+  local resume_json
+  resume_json=$("$resume_script" get "$current_dir" 2>/dev/null || true)
+
+  if [ -n "$resume_json" ]; then
+    status=$(echo "$resume_json" | jq -r '.status // empty' 2>/dev/null)
+    mode=$(echo "$resume_json" | jq -r '.execution_mode // empty' 2>/dev/null)
+
+    case "$status" in
+      ready)
+        active_spec=$(echo "$resume_json" | jq -r '.feature // empty' 2>/dev/null)
+        local tasks_file
+        tasks_file=$(echo "$resume_json" | jq -r '.tasks_path // empty' 2>/dev/null)
+        if [ -n "$tasks_file" ] && [ -f "$current_dir/$tasks_file" ]; then
+          local done pending
+          done=$(grep -c '^- \[x\]' "$current_dir/$tasks_file" 2>/dev/null || echo 0)
+          pending=$(grep -c '^- \[ \]' "$current_dir/$tasks_file" 2>/dev/null || echo 0)
+          tasks_summary="${done}/${pending}"
+        fi
+        ;;
+      ambiguous_feature)
+        active_spec="ambiguous"
+        ;;
+      incomplete_feature)
+        active_spec="incomplete"
+        ;;
+    esac
   fi
 
   echo "${mode}|${active_spec}|${tasks_summary}"
