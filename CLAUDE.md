@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repositorio
 
-Dotfiles para macOS: configuración de Ghostty + Zsh + Starship. El instalador crea symlinks desde el directorio del repo hacia las ubicaciones estándar del sistema.
+Dotfiles para terminal: configuración de Ghostty + Zsh + Starship. El instalador crea symlinks desde el directorio del repo hacia las ubicaciones estándar del sistema.
 
 ## Instalación y testing
 
@@ -32,10 +32,10 @@ dotfiles/
 │       ├── git-helpers.zsh      # git-workdev, git-personaldev, git-whoami, clone-*
 │       ├── pcsoft-helpers.zsh   # is-pcsoft-forbidden, is-pcsoft-editable
 │       ├── screenshots.zsh      # ss, last, ssd, imgclip
-│       └── tmux-helpers.zsh     # ta, tn, tk, tl, tdev
+│       └── herdr-helpers.zsh    # ta, tn, tk, tl, tdev
 ├── starship/starship.toml    # Prompt Gruvbox Dark → symlink a ~/.config/starship.toml
 ├── ghostty/config            # Terminal → symlink a ~/.config/ghostty/config
-├── tmux/tmux.conf            # Multiplexor → symlink a ~/.tmux.conf
+├── herdr/config.toml         # Multiplexor → symlink a ~/.config/herdr/config.toml
 ├── local/
 │   └── env.zsh.example       # Template para local/env.zsh (gitignored)
 └── install.sh                # Instalador

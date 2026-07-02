@@ -48,25 +48,6 @@ This table favors the shortcuts used by these dotfiles and Herdr defaults. It is
 
 Claude Code and OpenCode keybindings are mostly app-native. This repo adds launch helpers, themes/statusline config, and Herdr integration so sessions survive terminal detach/reattach.
 
-## macOS Windowing
-
-| Tool | Shortcut | Action |
-|------|----------|--------|
-| skhd/yabai | `Option+Command+Left/Down/Up/Right` | Focus window west/south/north/east. |
-| skhd/yabai | `Option+Command+Shift+Left/Down/Up/Right` | Warp or swap window in that direction. |
-| skhd/yabai | `Option+Command+1..9` | Focus space. |
-| skhd/yabai | `Option+Command+Shift+1..9` | Move window to space and follow it. |
-| skhd/yabai | `Option+Command+F` | Toggle float. |
-| skhd/yabai | `Option+Command+B` | Balance layout. |
-| skhd/yabai | `Option+Command+R` | Reset zero gap, balance, and reload SketchyBar. |
-| skhd/yabai | `Option+Command+/` | Show shortcuts help. |
-| skhd/yabai | `Option+Command+Shift+R` | Reload yabai, skhd, and SketchyBar. |
-| Karabiner | tap `Caps Lock` | `Escape`. |
-| Karabiner | hold `Caps Lock` | `Left Control`. |
-| Karabiner | `Right Command` | `Delete backward`. |
-
-`Option` is the same key macOS labels as `Alt`.
-
 ## Collision Notes
 
 | Area | Note |
@@ -80,5 +61,3 @@ Claude Code and OpenCode keybindings are mostly app-native. This repo adds launc
 
 - [Herdr workflow](herdr-workflow.md)
 - [`ghostty/config`](../ghostty/config)
-- [`skhd/skhdrc`](../skhd/skhdrc)
-- [`karabiner/karabiner.json`](../karabiner/karabiner.json)

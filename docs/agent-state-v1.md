@@ -4,7 +4,7 @@
 
 ## Purpose
 
-- Provide one stable anti-corruption layer between agent-native events and Cortex surfaces such as Herdr, SketchyBar, statuslines and desktop notifications.
+- Provide one stable anti-corruption layer between agent-native events and Cortex surfaces such as Herdr, statuslines and desktop notifications.
 - Make agent state comparable across tools without requiring every UI to understand every agent.
 - Keep state ephemeral, privacy-preserving and safe to roll up across panes, sessions and workspaces.
 - Define the contract before implementing runtime adapters.
@@ -104,7 +104,7 @@ Identity must be stable enough for rollups and cheap enough for shell adapters.
 | `context.repo_path` | Local-only absolute path. | Optional outside local adapters; never publish remotely. |
 | `context.session_id` | Stable per terminal/session container. | Use Herdr session/window identity when available. |
 | `context.pane_id` | Stable per pane. | Required for pane-level rollups. |
-| `context.surface` | Reporting surface. | Examples: `herdr`, `tmux`, `statusline`, `sketchybar`. |
+| `context.surface` | Reporting surface. | Examples: `herdr`, `statusline`. |
 
 ## Timestamps, TTL And Staleness
 

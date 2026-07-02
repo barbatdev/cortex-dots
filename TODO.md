@@ -8,14 +8,10 @@ Mejoras identificadas en dotfiles externos de referencia.
 
 - [x] **Fuente OSS-safe** — el snapshot usa `FiraCode Nerd Font` oficial y no incluye binarios ni glyphs de marca privada.
 - [x] **Statusline custom para Claude Code** — script que muestra barra visual de uso del contexto (verde/amarillo/rojo), modelo activo, rama git y porcentaje exacto.
-- [x] **Sesión flotante Alt+G en tmux** — popup flotante sobre cualquier layout.
-- [x] **tmux-resurrect** — guarda y restaura sesiones tmux al reiniciar. `Prefix+Ctrl+S` / `Prefix+Ctrl+R`.
 
 ## Media prioridad
 
-- [x] **SketchyBar macOS** — barra versionada en `sketchybar/`, instalada por Homebrew y enlazada a `~/.config/sketchybar`; incluye espacios, app activa, reloj y calendario.
-- [x] **Issues #327/#328 — servicios y atajos yabai/skhd** — `install.sh` intenta arrancar SketchyBar/yabai/skhd sin cortar por permisos macOS; focus/move usan flechas en skhd, ayuda y README.
-- [x] **Karabiner-Elements macOS** — config versionada en `karabiner/karabiner.json`, instalada por Homebrew cask y enlazada a `~/.config/karabiner/karabiner.json`; profile `cortex` con Caps Lock tap Escape / hold Left Control.
+- [x] **`macos-option-as-alt = left` en Ghostty** — Alt izquierdo como meta key, Alt derecho para tildes y ñ.
 - [x] **`macos-option-as-alt = left` en Ghostty** — Alt izquierdo como meta key, Alt derecho para tildes y ñ.
 - [x] **`right_format` en Starship** — cmd_duration y time alineados al extremo derecho.
 - [x] **`atuin`** — historial de zsh con SQLite y TUI avanzada en Ctrl+R.
@@ -23,7 +19,7 @@ Mejoras identificadas en dotfiles externos de referencia.
 ## Baja prioridad
 
 - [x] **Shaders de cursor en Ghostty** — 4 shaders disponibles en `ghostty/shaders/`. Activo: cursor_smear_gentleman. Para cambiar: editar `custom-shader` en ghostty/config.
-- [x] **`tmux-which-key`** — muestra keybindings al presionar el prefix.
+
 - [x] **`window-padding-balance = true` en Ghostty** — padding balanceado en splits.
 
 ---
