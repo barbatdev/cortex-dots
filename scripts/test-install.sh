@@ -66,6 +66,9 @@ poll_for() {
 export HOME="$TMP_HOME/home"
 export XDG_CONFIG_HOME="$TMP_HOME/config"
 export CORTEX_CONFIG_HOME="$XDG_CONFIG_HOME/cortex-dots"
+export CORTEX_DOTS_SKIP_PACKAGE_INSTALLS=true
+export CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS=true
+export CORTEX_DOTS_GHOSTTY_PROCESS_NAME=cortex-dots-ghostty-test
 mkdir -p "$HOME" "$XDG_CONFIG_HOME"
 PENDING_DIR="$CORTEX_CONFIG_HOME/pending/ghostty"
 GHOSTTY_DIR="$HOME/.config/ghostty"
@@ -89,7 +92,7 @@ if [[ "$SEED_STALE_OPPOSITE" == true ]]; then
     fi
 fi
 
-(exec -a ghostty sleep 60) &
+(exec -a "$CORTEX_DOTS_GHOSTTY_PROCESS_NAME" sleep 60) &
 FAKE_GHOSTTY_PID="$!"
 
 bash "$ROOT_DIR/install.sh" "${install_args[@]}"

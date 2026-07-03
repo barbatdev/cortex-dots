@@ -9,6 +9,7 @@ CHECK_MODE=false
 INSTALL_MODE="copy"
 CORTEX_CONFIG_HOME="${CORTEX_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/cortex-dots}"
 PENDING_GHOSTTY_DIR="$CORTEX_CONFIG_HOME/pending/ghostty"
+GHOSTTY_PROCESS_NAME="${CORTEX_DOTS_GHOSTTY_PROCESS_NAME:-ghostty}"
 
 case "$(uname -s)" in
     Darwin)
@@ -304,7 +305,7 @@ GHOSTTY_DEFER_WORKER_NEEDED=false
 GHOSTTY_PENDING_LOCK_HELD=false
 
 ghostty_is_running() {
-    ps -eo comm=,args= | awk '$1 == "ghostty" || $2 == "ghostty" || $2 ~ /\/ghostty$/ { found = 1 } END { exit found ? 0 : 1 }'
+    ps -eo comm=,args= | awk -v name="$GHOSTTY_PROCESS_NAME" '$1 == name || $2 == name || $2 ~ ("/" name "$") { found = 1 } END { exit found ? 0 : 1 }'
 }
 
 write_ghostty_apply_worker() {
@@ -325,6 +326,7 @@ TARGET_DIR="$HOME/.config/ghostty"
 FONT_TARGET="$CUSTOM_FONT"
 LOG_FILE="$GHOSTTY_APPLY_LOG"
 LOCK_DIR="\$CONFIG_HOME/apply-pending-ghostty.lock"
+GHOSTTY_PROCESS_NAME="$GHOSTTY_PROCESS_NAME"
 STAMP="\$(date +%Y%m%d_%H%M%S).\$\$"
 
 mkdir -p "\$(dirname "\$LOG_FILE")"
@@ -333,7 +335,7 @@ echo "pending: \$PENDING_DIR" >> "\$LOG_FILE"
 echo "target: \$TARGET_DIR" >> "\$LOG_FILE"
 
 ghostty_running() {
-    ps -eo comm=,args= | awk '\$1 == "ghostty" || \$2 == "ghostty" || \$2 ~ /\\/ghostty\$/ { found = 1 } END { exit found ? 0 : 1 }'
+    ps -eo comm=,args= | awk -v name="\$GHOSTTY_PROCESS_NAME" '\$1 == name || \$2 == name || \$2 ~ ("/" name "\$") { found = 1 } END { exit found ? 0 : 1 }'
 }
 
 acquire_lock() {
@@ -577,34 +579,112 @@ run_or_plan() {
     fi
 }
 
+run_with_optional_sudo() {
+    if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+        "$@"
+    elif command -v sudo &>/dev/null; then
+        sudo "$@"
+    else
+        return 127
+    fi
+}
+
+confirm_system_package_install() {
+    local package_name="$1"
+    local description="$2"
+
+    if [[ "${CORTEX_DOTS_INSTALL_PACKAGES:-false}" == true ]]; then
+        return 0
+    fi
+
+    if [[ ! -t 0 ]]; then
+        echo "  ⚠️  $package_name no está instalado; se omite install porque stdin no es interactivo"
+        return 1
+    fi
+
+    read -p "  ¿Instalar $package_name ($description) con el package manager del sistema? (y/N) " -n 1 -r
+    echo
+    [[ $REPLY =~ ^[Yy]$ ]]
+}
+
+install_package_if_missing() {
+    local command_name="$1"
+    local package_name="$2"
+    local description="$3"
+    local tap="${4:-}"
+
+    if command -v "$command_name" &>/dev/null; then
+        echo "  ✓ $command_name ya instalado"
+        return
+    fi
+
+    if [[ "${CORTEX_DOTS_SKIP_PACKAGE_INSTALLS:-false}" == true ]]; then
+        echo "  → Skipping automatic install for $package_name ($description) because CORTEX_DOTS_SKIP_PACKAGE_INSTALLS=true"
+        return
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+        if command -v brew &>/dev/null; then
+            echo "  → Would install $package_name ($description) via Homebrew"
+        elif command -v apt-get &>/dev/null; then
+            echo "  → Would install $package_name ($description) via apt-get"
+        elif command -v dnf &>/dev/null; then
+            echo "  → Would install $package_name ($description) via dnf"
+        elif command -v pacman &>/dev/null; then
+            echo "  → Would install $package_name ($description) via pacman"
+        else
+            echo "  → Would skip automatic install for $package_name ($description); no supported package manager found"
+        fi
+        return
+    fi
+
+    if [[ "$PLATFORM" == "Linux" ]] && ! confirm_system_package_install "$package_name" "$description"; then
+        return
+    fi
+
+    echo "  → Instalando $package_name ($description)..."
+    if command -v brew &>/dev/null; then
+        [[ -z "$tap" ]] || brew tap "$tap"
+        if brew install "$package_name"; then
+            return
+        fi
+    elif command -v apt-get &>/dev/null; then
+        if run_with_optional_sudo apt-get install -y "$package_name"; then
+            return
+        fi
+    elif command -v dnf &>/dev/null; then
+        if run_with_optional_sudo dnf install -y "$package_name"; then
+            return
+        fi
+    elif command -v pacman &>/dev/null; then
+        if run_with_optional_sudo pacman -S --needed --noconfirm "$package_name"; then
+            return
+        fi
+    else
+        echo "  ⚠️  $command_name no está instalado; no encontré package manager soportado"
+        return
+    fi
+
+    echo "  ⚠️  No se pudo instalar $package_name automáticamente; instalalo con el package manager de $PLATFORM"
+}
+
 install_formula_if_missing() {
     local command_name="$1"
     local formula="$2"
     local description="$3"
     local tap="${4:-}"
 
-    if ! command -v "$command_name" &>/dev/null; then
-        if [[ "$DRY_RUN" == true ]]; then
-            if command -v brew &>/dev/null; then
-                echo "  → Would install $formula ($description) via Homebrew"
-            else
-                echo "  → Would skip automatic install for $formula ($description); install with your $PLATFORM package manager"
-            fi
-        elif command -v brew &>/dev/null; then
-            echo "  → Instalando $formula ($description)..."
-            [[ -z "$tap" ]] || brew tap "$tap"
-            brew install "$formula"
-        else
-            echo "  ⚠️  $command_name no está instalado; instalalo con el package manager de $PLATFORM"
-        fi
-    else
-        echo "  ✓ $command_name ya instalado"
-    fi
+    install_package_if_missing "$command_name" "$formula" "$description" "$tap"
 }
 
 install_starship_if_missing() {
     if command -v starship &>/dev/null; then
         echo "  ✓ starship ya instalado"
+        return
+    fi
+
+    if [[ "${CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS:-false}" == true ]]; then
+        echo "  → Skipping starship install because CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS=true"
         return
     fi
 
@@ -820,6 +900,11 @@ install_ai_cli_if_requested() {
 
     if command -v "$command_name" &>/dev/null; then
         echo "  ✓ $display_name ya instalado"
+        return
+    fi
+
+    if [[ "${CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS:-false}" == true ]]; then
+        echo "  → Skipping $display_name install because CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS=true"
         return
     fi
 
