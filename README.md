@@ -126,12 +126,18 @@ Run before publishing or packaging:
 scripts/oss-audit.sh
 ```
 
-The audit scans tracked files only and fails on known private identifiers, private paths, and email-shaped strings.
+The audit scans tracked files only and fails on configured private identifiers, private paths, and email-shaped strings.
+Set `OSS_AUDIT_FORBIDDEN_REGEX` or create an untracked `.oss-audit-denylist.local` file with one regex per line to add private denylist terms locally.
+For CI, configure the repository variable `OSS_AUDIT_FORBIDDEN_REGEX` with private denylist terms instead of committing them.
 
 ## Validation
 
 ```bash
 scripts/oss-audit.sh
+scripts/test-install.sh
+scripts/test-install.sh --symlink
+scripts/test-install.sh --seed-stale-opposite
+scripts/test-install.sh --symlink --seed-stale-opposite
 bash -n install.sh
 zsh -n zsh/zshrc
 python3 - <<'PY'
