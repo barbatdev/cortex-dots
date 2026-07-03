@@ -38,6 +38,6 @@ Mejoras identificadas en dotfiles externos de referencia.
 
 ## Worktrees — integración natural con Claude
 
-- [x] **Worktree helpers zsh + cmux** — `wtadd`/`wtlist`/`wtremove` en `worktree-helpers.zsh`. Mecánica pura: crear directorio hermano, detectar repos PCSoft via `is-pcsoft-forbidden`, abrir workspace cmux automáticamente. Los comandos son la infraestructura, no el punto de entrada al usuario.
+- [x] **Worktree helpers zsh + cmux** — `wtadd`/`wtlist`/`wtremove` en `worktree-helpers.zsh`. Mecánica pura: crear directorio hermano, detectar repos PC via `is-pc-forbidden`, abrir workspace cmux automáticamente. Los comandos son la infraestructura, no el punto de entrada al usuario.
 
 - [x] **Regla de evaluación proactiva en claude-config** — Claude evalúa si worktrees convienen y los sugiere/implementa sin que el usuario lo pida. Triggers: "hay un bug urgente y estoy en medio de algo", feature branch larga + hotfix simultáneo, "no quiero perder contexto pero necesito cambiar de rama". Si el repo es PCSoft → nunca sugerir. Si es no-PCSoft y hay conflicto de contexto → proponer `wtadd` + nuevo workspace cmux directamente.

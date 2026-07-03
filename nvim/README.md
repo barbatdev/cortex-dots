@@ -6,14 +6,11 @@ Estado documentado el 2026-06-19. La configuración activa vive por ahora en
 ## Base
 
 - Base: fork de una config comunitaria de nvim (LazyVim/Snacks)
-- Subdirectorio usado: `GentlemanNvim/nvim`
 - Config local activa: `~/.config/nvim`
-- Backup previo a la migración: `~/.config/nvim.backup-before-gentleman-20260619-183411`
-- Backup LazyVim anterior: `~/.config/nvim.lazyvim-backup-20260619`
 
 ## Decisiones
 
-- Mantener la config de Gentleman como base estable, evitando mezclar piezas sueltas.
+- Mantener la config base estable, evitando mezclar piezas sueltas.
 - Mantener Oil como explorer principal en `-`.
 - Mantener Neo-tree como explorer lateral en `<leader>e`.
 - Mantener Oil flotante en `<leader>E`.
@@ -22,7 +19,7 @@ Estado documentado el 2026-06-19. La configuración activa vive por ahora en
 - Aplicar un overlay visual Cortex sobre el theme upstream, en vez de reemplazar todo el colorscheme.
 - Usar como fuente cromática canónica la paleta Cortex warm/slate versionada en estos dotfiles.
 - Usar `FiraCode Nerd Font` como fuente GUI.
-- Hacer que `<leader>bq` cierre el buffer actual con `Snacks.bufdelete()`; no usar `edit #` porque puede saltar a buffers temporales en `/private/var/folders`.
+- Hacer que `<leader>bq` cierre el buffer actual con `Snacks.bufdelete()`; no usar `edit #` porque puede saltar a buffers temporales del sistema.
 - Pintar explícitamente `render-markdown.nvim` con la paleta Cortex; los grupos base no alcanzan porque Markdown usa highlights propios.
 - Desactivar reglas ruidosas de markdownlint (`MD013`, `MD060`) para docs/runbooks largos.
 - Habilitar ayudas de aprendizaje como `precognition.nvim`; todo lo que muestre movimientos/contexto útil es deseable en esta etapa.
