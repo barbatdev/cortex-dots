@@ -1,6 +1,5 @@
 # Configuración local (paths, tokens, datos personales)
 local/env.zsh
-.oss-audit-denylist.local
 
 # macOS
 .DS_Store
