@@ -42,7 +42,7 @@ bash install.sh --check
 | Terminal | `ghostty/config`, `ghostty/shaders/` |
 | Prompt | `starship/starship.toml` using the generic `cortex_warm_slate` palette |
 | Multiplexer | `herdr/config.toml` plus session helpers |
-| AI CLI UX | `claude/`, `opencode/`, Herdr helpers, agent-state docs |
+| AI CLI UX | Herdr helpers, agent-state docs |
 | Package guardrails | global defaults for `npm`, `pnpm`, `bun`, and `uv` |
 
 ## Navigation Defaults
@@ -127,7 +127,6 @@ scripts/test-install.sh --seed-stale-opposite
 scripts/test-install.sh --symlink --seed-stale-opposite
 bash -n install.sh
 zsh -n zsh/zshrc
-for path in opencode/*.json; do jq . "$path" >/dev/null 2>&1 || echo "invalid: $path"; done
 python3 - <<'PY'
 import pathlib, tomllib
 for path in pathlib.Path('.').rglob('*.toml'):
