@@ -41,8 +41,7 @@ bash install.sh --check
 | Shell | `zsh/zshrc`, `zsh/scripts/` |
 | Terminal | `ghostty/config`, `ghostty/shaders/` |
 | Prompt | `starship/starship.toml` using the generic `cortex_warm_slate` palette |
-| Multiplexer | `herdr/config.toml` plus session helpers |
-| AI CLI UX | Herdr helpers, agent-state docs |
+| Multiplexer | `herdr/config.toml` |
 | Package guardrails | global defaults for `npm`, `pnpm`, `bun`, and `uv` |
 
 ## Navigation Defaults
@@ -135,13 +134,6 @@ for path in pathlib.Path('.').rglob('*.toml'):
 PY
 bash install.sh --check
 ```
-
-## Docs
-
-- [Agent State v1](docs/agent-state-v1.md)
-- [Herdr workflow](docs/herdr-workflow.md)
-- [Keymaps](docs/keymaps.md)
-- [Release checklist](docs/release-checklist.md)
 
 ## License
 
