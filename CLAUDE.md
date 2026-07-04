@@ -47,10 +47,6 @@ dotfiles/
 │   ├── muxy.conf             # Muxy integration config
 │   └── shaders/              # 4 cursor shaders (glsl)
 ├── herdr/config.toml         # Multiplexor → ~/.config/herdr/config.toml
-├── claude/
-│   └── statusline.sh         # Statusline para Claude Code
-├── opencode/
-│   └── tui.json              # TUI config → ~/.config/opencode/tui.json
 ├── lazygit/config.yml        # LazyGit → ~/.config/lazygit/config.yml
 ├── local/
 │   └── env.zsh.example       # Template para ~/.config/cortex-dots/local/env.zsh

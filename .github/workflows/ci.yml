@@ -36,7 +36,6 @@ jobs:
 
           bash_files=(
             install.sh
-            claude/statusline.sh
             zsh/scripts/*.sh
             scripts/*.sh
           )
