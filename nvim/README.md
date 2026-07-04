@@ -26,7 +26,7 @@ Estado documentado el 2026-06-19. La configuración activa vive por ahora en
 
 ## Paleta usada para el overlay
 
-Derivada de la paleta Cortex warm/slate usada por Ghostty, Starship y SketchyBar.
+Derivada de la paleta Cortex warm/slate usada por Ghostty y Starship.
 
 | Uso | Color |
 |-----|-------|

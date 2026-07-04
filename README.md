@@ -57,7 +57,7 @@ The shell profile uses safe, env-driven defaults:
 | `tools` | `$TOOLS_DIR` (`~/dev/tools`) |
 | `worktrees` | `$WORKTREES_DIR` (`~/dev/worktrees`) |
 | `cortex` | `$CORTEX_ROOT` (`~/.cortex/cortex`) |
-| `dotfiles` | `$CORTEX_DOTFILES_DIR` (`~/.cortex/cortex-dots`) |
+| `dotfiles` | `$CORTEX_DOTFILES_DIR` (`~/.config/cortex-dots`) |
 
 Override any of these in `~/.config/cortex-dots/local/env.zsh`.
 
@@ -140,6 +140,7 @@ scripts/test-install.sh --seed-stale-opposite
 scripts/test-install.sh --symlink --seed-stale-opposite
 bash -n install.sh
 zsh -n zsh/zshrc
+for path in opencode/*.json opencode/**/*.json claude/themes/*.json; do jq . "$path" >/dev/null 2>&1 || echo "invalid: $path"; done
 python3 - <<'PY'
 import pathlib, tomllib
 for path in pathlib.Path('.').rglob('*.toml'):
