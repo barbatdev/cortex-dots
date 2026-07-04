@@ -1,0 +1,32 @@
+name: Bug report
+description: Report broken behavior in the dotfiles or installer.
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include commands and relevant environment details, but do not include secrets or private paths.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Checks already run
+      description: For example, `bash install.sh --check` or `scripts/oss-audit.sh`.
+    validations:
+      required: false

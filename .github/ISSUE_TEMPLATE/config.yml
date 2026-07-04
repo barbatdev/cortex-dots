@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security issue
+    url: https://github.com/barbatdev/cortex-dots/security/policy
+    about: Please report secrets, credential exposure, or command-injection findings privately.
