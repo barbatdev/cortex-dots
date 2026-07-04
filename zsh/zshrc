@@ -220,16 +220,8 @@ _SCRIPTS_DIR="$_DOTFILES_DIR/zsh/scripts"
 if [[ -d "$_SCRIPTS_DIR" ]]; then
     [[ -f "$_SCRIPTS_DIR/pc-helpers.zsh" ]] && source "$_SCRIPTS_DIR/pc-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/screenshots.zsh" ]]    && source "$_SCRIPTS_DIR/screenshots.zsh"
-    [[ -f "$_SCRIPTS_DIR/claude-helpers.zsh" ]] && source "$_SCRIPTS_DIR/claude-helpers.zsh"
-    [[ -f "$_SCRIPTS_DIR/git-helpers.zsh" ]]    && source "$_SCRIPTS_DIR/git-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/ssh-helpers.zsh" ]]    && source "$_SCRIPTS_DIR/ssh-helpers.zsh"
-    [[ -f "$_SCRIPTS_DIR/herdr-helpers.zsh" ]]  && source "$_SCRIPTS_DIR/herdr-helpers.zsh"
-    [[ -f "$_SCRIPTS_DIR/worktree-helpers.zsh" ]] && source "$_SCRIPTS_DIR/worktree-helpers.zsh"
-    [[ -f "$_SCRIPTS_DIR/agent-state.sh" ]] && source "$_SCRIPTS_DIR/agent-state.sh"
 fi
-
-alias cortex.agent_state.v1="cortex_agent_state"
-alias agent-state="cortex_agent_state"
 #endregion
 
 #region Local Overrides
