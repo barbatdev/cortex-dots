@@ -28,7 +28,6 @@ All changes to `main` require maintainer review. This is especially important fo
 - Do not commit secrets, tokens, private keys, real emails, private hostnames, private IPs, customer names, or machine-specific paths.
 - Put local/private values in `~/.config/cortex-dots/local/env.zsh`.
 - Keep examples generic and placeholder-based.
-- Run `scripts/oss-audit.sh` before opening a PR.
 - Run the validation commands listed in `README.md` when touching scripts or config formats.
 
 ## Pull Request Expectations

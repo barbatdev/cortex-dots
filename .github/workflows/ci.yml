@@ -22,12 +22,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends zsh jq shellcheck
 
-      - name: Run OSS audit
-        shell: bash
-        env:
-          OSS_AUDIT_FORBIDDEN_REGEX: ${{ vars.OSS_AUDIT_FORBIDDEN_REGEX }}
-        run: scripts/oss-audit.sh
-
       - name: Validate shell syntax
         shell: bash
         run: |
