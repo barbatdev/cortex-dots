@@ -253,9 +253,7 @@ PY
     check_install_target "$DOTFILES/ghostty/config" "$HOME/.config/ghostty/config"
     check_install_target "$DOTFILES/ghostty/shaders" "$HOME/.config/ghostty/shaders"
     check_install_target "$DOTFILES/opencode/tui.json" "$HOME/.config/opencode/tui.json"
-    check_install_target "$DOTFILES/opencode/themes" "$HOME/.config/opencode/themes"
     check_install_target "$DOTFILES/claude/statusline.sh" "$HOME/.claude/statusline.sh"
-    check_install_target "$DOTFILES/claude/themes" "$HOME/.claude/themes"
     check_install_target "$DOTFILES/lazygit/config.yml" "$HOME/.config/lazygit/config.yml"
 
     echo ""
@@ -266,7 +264,7 @@ PY
     for path in "$DOTFILES"/zsh/scripts/*.zsh; do
         check_shell "$path" zsh
     done
-    for path in "$DOTFILES"/opencode/*.json "$DOTFILES"/opencode/**/*.json "$DOTFILES"/claude/themes/*.json; do
+    for path in "$DOTFILES"/opencode/*.json; do
         check_json "$path"
     done
     check_toml "$DOTFILES/starship/starship.toml"
@@ -799,9 +797,7 @@ backup_if_exists "$HOME/.config/herdr/config.toml"
 backup_if_exists "$HOME/.config/ghostty/config"
 backup_if_exists "$HOME/.config/herdr/config.toml"
 backup_if_exists "$HOME/.config/opencode/tui.json"
-backup_if_exists "$HOME/.config/opencode/themes"
 backup_if_exists "$HOME/.claude/statusline.sh"
-backup_if_exists "$HOME/.claude/themes"
 backup_if_exists "$HOME/.config/lazygit/config.yml"
 
 # --- Instalar configs ---
@@ -880,10 +876,8 @@ install_target "$DOTFILES/herdr/config.toml"      "$HOME/.config/herdr/config.to
 install_target "$DOTFILES/ghostty/config"         "$HOME/.config/ghostty/config"
 install_target "$DOTFILES/ghostty/shaders"        "$HOME/.config/ghostty/shaders"
 install_target "$DOTFILES/opencode/tui.json"      "$HOME/.config/opencode/tui.json"
-install_target "$DOTFILES/opencode/themes"        "$HOME/.config/opencode/themes"
 install_target "$DOTFILES/claude/statusline.sh"   "$HOME/.claude/statusline.sh"
 run_or_plan "chmod +x $HOME/.claude/statusline.sh" chmod +x "$HOME/.claude/statusline.sh"
-install_target "$DOTFILES/claude/themes"          "$HOME/.claude/themes"
 install_target "$DOTFILES/lazygit/config.yml"     "$HOME/.config/lazygit/config.yml"
 
 if [[ "$GHOSTTY_DEFER_WORKER_NEEDED" == true ]]; then
