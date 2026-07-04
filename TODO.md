@@ -4,39 +4,39 @@ Mejoras identificadas en dotfiles externos de referencia.
 
 ---
 
-## Alta prioridad
+## Completado
+
+Las siguientes mejoras se han implementado y están activas en los dotfiles:
+
+### Alta prioridad
 
 - [x] **Fuente OSS-safe** — el snapshot usa `FiraCode Nerd Font` oficial y no incluye binarios ni glyphs de marca privada.
 - [x] **Statusline custom para Claude Code** — script que muestra barra visual de uso del contexto (verde/amarillo/rojo), modelo activo, rama git y porcentaje exacto.
 
-## Media prioridad
+### Media prioridad
 
 - [x] **`right_format` en Starship** — cmd_duration y time alineados al extremo derecho.
 - [x] **`atuin`** — historial de zsh con SQLite y TUI avanzada en Ctrl+R.
 
-## Baja prioridad
+### Baja prioridad
 
 - [x] **Shaders de cursor en Ghostty** — 4 shaders disponibles en `ghostty/shaders/`. Activo: cursor_smear_soft. Para cambiar: editar `custom-shader` en ghostty/config.
 
 - [x] **`window-padding-balance = true` en Ghostty** — padding balanceado en splits.
 
----
+### Mejoras de memoria — inspiradas en Engram v1.10.5
 
-## Mejoras de memoria — inspiradas en Engram v1.10.5
-
-### Alta prioridad
+#### Alta prioridad
 
 - [x] **Nudge de 15 minutos sin mem_save** — Hook `UserPromptSubmit` que revisa el timestamp de la última observación en dev-memory. Si pasaron +15 min y la sesión tiene +5 min de antigüedad, inyecta recordatorio para guardar contexto. Evita pérdida de decisiones en sesiones largas de implementación.
 
-### Media prioridad
+#### Media prioridad
 
 - [x] **PostCompact con orden explícito** — Mejorar el hook PostCompact actual (genérico) para que instruya el orden exacto: `mem_session_summary` primero → `mem_context` después, con el nombre del proyecto interpolado. Más determinístico que el mensaje actual.
 
 - [x] **detect_project() con git remote** — Derivar el nombre del proyecto desde `git remote get-url origin` en vez de dirname. Más robusto en worktrees y monorepos donde el nombre del directorio no refleja el proyecto real.
 
----
-
-## Worktrees — integración natural con Claude
+### Worktrees — integración natural con Claude
 
 - [x] **Worktree helpers zsh** — `wtadd`/`wtlist`/`wtremove` en `worktree-helpers.zsh`. Mecánica pura: crear directorio hermano, detectar repos de proyectos PC via `is-pc-forbidden`, abrir workspace automáticamente.
 

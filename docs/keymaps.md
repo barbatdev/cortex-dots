@@ -40,6 +40,7 @@ This table favors the shortcuts used by these dotfiles and Herdr defaults. It is
 | Tool | Shortcut / Command | Action |
 |------|--------------------|--------|
 | Claude Code | `cc [path]` | Start Claude Code in the current or given directory. |
+| Claude Code | `ccd [path]` | Navigate to a workspace subdirectory (cd helper). |
 | Claude Code | `ccb [path]` | Start Claude Code with explicit permission bypass. |
 | Claude Code | `ccx <context> [path]` | Pipe initial context into Claude Code. |
 | Claude Code | `ccclip <files>` | Copy files as fenced code context to the clipboard. |
