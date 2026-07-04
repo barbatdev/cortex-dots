@@ -48,11 +48,9 @@ dotfiles/
 │   └── shaders/              # 4 cursor shaders (glsl)
 ├── herdr/config.toml         # Multiplexor → ~/.config/herdr/config.toml
 ├── claude/
-│   ├── statusline.sh         # Statusline para Claude Code
-│   └── themes/               # Temas Claude Code (cortex.json, cortex-green.json)
+│   └── statusline.sh         # Statusline para Claude Code
 ├── opencode/
-│   ├── tui.json              # TUI config → ~/.config/opencode/tui.json
-│   └── themes/               # Temas OpenCode
+│   └── tui.json              # TUI config → ~/.config/opencode/tui.json
 ├── lazygit/config.yml        # LazyGit → ~/.config/lazygit/config.yml
 ├── local/
 │   └── env.zsh.example       # Template para ~/.config/cortex-dots/local/env.zsh
