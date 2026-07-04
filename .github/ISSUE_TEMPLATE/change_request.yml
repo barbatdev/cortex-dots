@@ -1,0 +1,39 @@
+name: Change request
+description: Propose a focused change before opening a pull request.
+title: "[Change]: "
+labels: ["needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please open an issue before a PR. PRs without an agreed issue may be closed.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What should change, and why?
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-scope
+    attributes:
+      label: Proposed scope
+      description: What files or behavior do you expect to touch?
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Public safety considerations
+      description: Note any installer, shell, AI CLI, package-manager, or private-data exposure risks.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I understand changes must go through a pull request and maintainer review before merge.
+          required: true
+        - label: I will not include secrets, private paths, private hostnames, private IPs, real emails, or machine-specific values.
+          required: true
