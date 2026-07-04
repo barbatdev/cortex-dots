@@ -30,6 +30,26 @@ All changes to `main` require maintainer review. This is especially important fo
 - Keep examples generic and placeholder-based.
 - Run the validation commands listed in `README.md` when touching scripts or config formats.
 
+## Supply Chain Security
+
+Any external tool, CLI, or dependency installed by `install.sh` or referenced in scripts must be pinned to a specific version. Do not use `latest`, `^ SemVer` ranges, or unpinned references in installation commands. Versions must be at least 15 days old before adoption — supply chain attacks typically target newly published releases.
+
+```bash
+# Good — pinned version, 15+ days old
+curl -fsSL https://starship.rs/install.sh | sh -s -- -b "$HOME/.local/bin" -y --commit abc123
+
+# Good — pinned package manager version
+npm install -g some-cli@2.4.1
+
+# Bad — no version pinning
+curl -fsSL https://example.com/install | bash
+
+# Bad — latest tag
+npm install -g some-cli@latest
+```
+
+For GitHub Actions in workflows, always use explicit commit SHAs (`@commit-sha`) or pinned minor versions (`@v4`). Avoid `${{ github.sha }}` or floating tags in production workflows.
+
 ## Pull Request Expectations
 
 Every PR should include:
