@@ -26,8 +26,8 @@ In `hremote`, `Ctrl+V` is reserved by Herdr for remote image paste when supporte
 
 | Level | Convention | Example |
 |-------|------------|---------|
-| Session | Host + repo + branch + optional role | `local-mac-cortex-dotfiles-docs-herdr-workflow-reference-focus` |
-| Workspace | Repo/branch or operational label | `cortex-dotfiles-docs-herdr-workflow-reference` |
+| Session | Host + repo + branch + optional role | `local-cortex-dotfiles-fix/oss-announce-focus` |
+| Workspace | Repo/branch or operational label | `cortex-dotfiles-fix-oss-announce` |
 | Tab | One objective or phase | `docs`, `verify`, `review` |
 | Pane | One actor or process | `shell`, `cc`, `oc`, `tests`, `logs` |
 

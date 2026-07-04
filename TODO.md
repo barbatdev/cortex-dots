@@ -16,7 +16,7 @@ Mejoras identificadas en dotfiles externos de referencia.
 
 ## Baja prioridad
 
-- [x] **Shaders de cursor en Ghostty** — 4 shaders disponibles en `ghostty/shaders/`. Activo: cursor_smear_gentleman. Para cambiar: editar `custom-shader` en ghostty/config.
+- [x] **Shaders de cursor en Ghostty** — 4 shaders disponibles en `ghostty/shaders/`. Activo: cursor_smear_soft. Para cambiar: editar `custom-shader` en ghostty/config.
 
 - [x] **`window-padding-balance = true` en Ghostty** — padding balanceado en splits.
 
@@ -38,6 +38,6 @@ Mejoras identificadas en dotfiles externos de referencia.
 
 ## Worktrees — integración natural con Claude
 
-- [x] **Worktree helpers zsh + cmux** — `wtadd`/`wtlist`/`wtremove` en `worktree-helpers.zsh`. Mecánica pura: crear directorio hermano, detectar repos PCSoft via `is-pcsoft-forbidden`, abrir workspace cmux automáticamente. Los comandos son la infraestructura, no el punto de entrada al usuario.
+- [x] **Worktree helpers zsh** — `wtadd`/`wtlist`/`wtremove` en `worktree-helpers.zsh`. Mecánica pura: crear directorio hermano, detectar repos de proyectos PC via `is-pc-forbidden`, abrir workspace automáticamente.
 
-- [x] **Regla de evaluación proactiva en claude-config** — Claude evalúa si worktrees convienen y los sugiere/implementa sin que el usuario lo pida. Triggers: "hay un bug urgente y estoy en medio de algo", feature branch larga + hotfix simultáneo, "no quiero perder contexto pero necesito cambiar de rama". Si el repo es PCSoft → nunca sugerir. Si es no-PCSoft y hay conflicto de contexto → proponer `wtadd` + nuevo workspace cmux directamente.
+- [x] **Regla de evaluación proactiva** — Claude evalúa si worktrees convienen y los sugiere/implementa sin que el usuario lo pida. Triggers: "hay un bug urgente y estoy en medio de algo", feature branch larga + hotfix simultáneo, "no quiero perder contexto pero necesito cambiar de rama". Si el repo es de proyectos PC → nunca sugerir. Si es no-PC y hay conflicto de contexto → proponer `wtadd` + nuevo workspace directamente.

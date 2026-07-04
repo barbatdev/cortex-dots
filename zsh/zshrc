@@ -1,6 +1,5 @@
 #region Header
 # Dev Zsh Profile — Ghostty + Zsh
-# YOUR_NAME - YOUR_ORG
 #endregion
 
 #region Performance
@@ -184,15 +183,15 @@ edit() {
     local path="${1:?Uso: edit <archivo>}"
 
     # Verificar si es archivo PCSoft antes de abrir
-    if is-pcsoft-forbidden "$path" 2>/dev/null; then
-        echo "⛔ ARCHIVO PCSOFT PROHIBIDO: $path"
+    if is-pc-forbidden "$path" 2>/dev/null; then
+        echo "⛔ ARCHIVO PC PROHIBIDO: $path"
         echo "   La modificación externa corrompe el archivo permanentemente."
         echo "   Usá el WinDev/WebDev IDE."
         return 1
     fi
 
-    if is-pcsoft-editable "$path" 2>/dev/null; then
-        echo "⚠️  ARCHIVO PCSOFT EDITABLE: $path"
+    if is-pc-editable "$path" 2>/dev/null; then
+        echo "⚠️  ARCHIVO PC EDITABLE: $path"
         echo "   Solo modificar bloques 'code : |1+'. El IDE debe estar CERRADO."
         echo -n "   ¿Continuar? [s/N] "
         read -r confirm
@@ -219,7 +218,7 @@ fi
 _SCRIPTS_DIR="$_DOTFILES_DIR/zsh/scripts"
 
 if [[ -d "$_SCRIPTS_DIR" ]]; then
-    [[ -f "$_SCRIPTS_DIR/pcsoft-helpers.zsh" ]] && source "$_SCRIPTS_DIR/pcsoft-helpers.zsh"
+    [[ -f "$_SCRIPTS_DIR/pc-helpers.zsh" ]] && source "$_SCRIPTS_DIR/pc-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/screenshots.zsh" ]]    && source "$_SCRIPTS_DIR/screenshots.zsh"
     [[ -f "$_SCRIPTS_DIR/claude-helpers.zsh" ]] && source "$_SCRIPTS_DIR/claude-helpers.zsh"
     [[ -f "$_SCRIPTS_DIR/git-helpers.zsh" ]]    && source "$_SCRIPTS_DIR/git-helpers.zsh"

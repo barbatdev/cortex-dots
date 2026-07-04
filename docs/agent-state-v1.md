@@ -73,7 +73,7 @@ Recommended optional fields:
   },
   "context": {
     "workspace_id": "cortex-dotfiles",
-    "repo_path": "/Users/you/dev/cortex-dots",
+    "repo_path": "/path/to/your/repo",
     "session_id": "herdr:main:1",
     "pane_id": "herdr:main:1.2",
     "surface": "herdr"

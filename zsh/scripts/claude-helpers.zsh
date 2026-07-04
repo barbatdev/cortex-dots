@@ -19,10 +19,8 @@ _workspace_name_for_path() {
 
     if [[ -n "$git_root" ]]; then
         local repo_name
-        local parent_name
         repo_name=$(basename "$git_root" | tr '.' '-')
-        parent_name=$(basename "$(dirname "$git_root")" | tr '.' '-')
-        printf '%s-%s' "$parent_name" "$repo_name"
+        printf '%s' "$repo_name"
     else
         basename "$target" | tr '.' '-'
     fi

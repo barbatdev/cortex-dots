@@ -9,6 +9,7 @@ CHECK_MODE=false
 INSTALL_MODE="copy"
 CORTEX_CONFIG_HOME="${CORTEX_CONFIG_HOME:-${XDG_CONFIG_HOME:-$HOME/.config}/cortex-dots}"
 PENDING_GHOSTTY_DIR="$CORTEX_CONFIG_HOME/pending/ghostty"
+GHOSTTY_PROCESS_NAME="${CORTEX_DOTS_GHOSTTY_PROCESS_NAME:-ghostty}"
 
 case "$(uname -s)" in
     Darwin)
@@ -300,9 +301,11 @@ echo "Install mode: $INSTALL_MODE"
 
 GHOSTTY_LIVE_WARNING_SHOWN=false
 GHOSTTY_DEFER_WORKER_STARTED=false
+GHOSTTY_DEFER_WORKER_NEEDED=false
+GHOSTTY_PENDING_LOCK_HELD=false
 
 ghostty_is_running() {
-    ps -eo comm=,args= | awk '$1 == "ghostty" || $2 == "ghostty" || $2 ~ /\/ghostty$/ { found = 1 } END { exit found ? 0 : 1 }'
+    ps -eo comm=,args= | awk -v name="$GHOSTTY_PROCESS_NAME" '$1 == name || $2 == name || $2 ~ ("/" name "$") { found = 1 } END { exit found ? 0 : 1 }'
 }
 
 write_ghostty_apply_worker() {
@@ -320,7 +323,10 @@ set -eu
 CONFIG_HOME="$CORTEX_CONFIG_HOME"
 PENDING_DIR="$PENDING_GHOSTTY_DIR"
 TARGET_DIR="$HOME/.config/ghostty"
+FONT_TARGET="$CUSTOM_FONT"
 LOG_FILE="$GHOSTTY_APPLY_LOG"
+LOCK_DIR="\$CONFIG_HOME/apply-pending-ghostty.lock"
+GHOSTTY_PROCESS_NAME="$GHOSTTY_PROCESS_NAME"
 STAMP="\$(date +%Y%m%d_%H%M%S).\$\$"
 
 mkdir -p "\$(dirname "\$LOG_FILE")"
@@ -329,7 +335,28 @@ echo "pending: \$PENDING_DIR" >> "\$LOG_FILE"
 echo "target: \$TARGET_DIR" >> "\$LOG_FILE"
 
 ghostty_running() {
-    ps -eo comm=,args= | awk '\$1 == "ghostty" || \$2 == "ghostty" || \$2 ~ /\\/ghostty\$/ { found = 1 } END { exit found ? 0 : 1 }'
+    ps -eo comm=,args= | awk -v name="\$GHOSTTY_PROCESS_NAME" '\$1 == name || \$2 == name || \$2 ~ ("/" name "\$") { found = 1 } END { exit found ? 0 : 1 }'
+}
+
+acquire_lock() {
+    while ! ln -s "\$\$" "\$LOCK_DIR" 2>/dev/null; do
+        if [ -L "\$LOCK_DIR" ]; then
+            lock_pid="\$(readlink "\$LOCK_DIR" 2>/dev/null || true)"
+            if [ -n "\$lock_pid" ] && ! kill -0 "\$lock_pid" 2>/dev/null; then
+                rm -f "\$LOCK_DIR"
+                continue
+            fi
+        elif [ -d "\$LOCK_DIR" ]; then
+            lock_pid="\$(cat "\$LOCK_DIR/pid" 2>/dev/null || true)"
+            if { [ -z "\$lock_pid" ] || ! kill -0 "\$lock_pid" 2>/dev/null; }; then
+                rm -f "\$LOCK_DIR/pid"
+                rmdir "\$LOCK_DIR" 2>/dev/null || true
+                continue
+            fi
+        fi
+        sleep 0.2
+    done
+    trap 'rm -f "\$LOCK_DIR"' EXIT INT TERM
 }
 
 wait_seconds=0
@@ -344,9 +371,31 @@ done
 
 echo "Ghostty exited after \${wait_seconds}s; applying pending config" >> "\$LOG_FILE"
 
+acquire_lock
 mkdir -p "\$TARGET_DIR"
 
-if [ -f "\$PENDING_DIR/config" ]; then
+if [ -f "\$PENDING_DIR/FiraCodeNerdFontMonoBeard-Reg.ttf" ]; then
+    font_tmp="\$FONT_TARGET.tmp.\$STAMP"
+    mkdir -p "\$(dirname "\$FONT_TARGET")"
+    cp "\$PENDING_DIR/FiraCodeNerdFontMonoBeard-Reg.ttf" "\$font_tmp"
+    mv -f "\$font_tmp" "\$FONT_TARGET"
+    if command -v fc-cache >/dev/null 2>&1; then
+        fc-cache -f "\$(dirname "\$FONT_TARGET")" >/dev/null 2>&1 || true
+    fi
+    mv "\$PENDING_DIR/FiraCodeNerdFontMonoBeard-Reg.ttf" "\$PENDING_DIR/FiraCodeNerdFontMonoBeard-Reg.ttf.applied_\$STAMP"
+    echo "applied font" >> "\$LOG_FILE"
+fi
+
+if [ "\$(cat "\$PENDING_DIR/config.mode" 2>/dev/null || true)" = "symlink" ] && [ -f "\$PENDING_DIR/config.source" ]; then
+    previous="\$TARGET_DIR/config.previous_\$STAMP"
+    if [ -e "\$TARGET_DIR/config" ] || [ -L "\$TARGET_DIR/config" ]; then
+        mv "\$TARGET_DIR/config" "\$previous"
+    fi
+    ln -s "\$(cat "\$PENDING_DIR/config.source")" "\$TARGET_DIR/config"
+    mv "\$PENDING_DIR/config.mode" "\$PENDING_DIR/config.mode.applied_\$STAMP"
+    mv "\$PENDING_DIR/config.source" "\$PENDING_DIR/config.source.applied_\$STAMP"
+    echo "applied config symlink" >> "\$LOG_FILE"
+elif [ -f "\$PENDING_DIR/config" ]; then
     tmp="\$TARGET_DIR/.tmp.config.\$STAMP"
     cp "\$PENDING_DIR/config" "\$tmp"
     mv -f "\$tmp" "\$TARGET_DIR/config"
@@ -354,7 +403,16 @@ if [ -f "\$PENDING_DIR/config" ]; then
     echo "applied config" >> "\$LOG_FILE"
 fi
 
-if [ -d "\$PENDING_DIR/shaders" ]; then
+if [ "\$(cat "\$PENDING_DIR/shaders.mode" 2>/dev/null || true)" = "symlink" ] && [ -f "\$PENDING_DIR/shaders.source" ]; then
+    previous="\$TARGET_DIR/shaders.previous_\$STAMP"
+    if [ -e "\$TARGET_DIR/shaders" ] || [ -L "\$TARGET_DIR/shaders" ]; then
+        mv "\$TARGET_DIR/shaders" "\$previous"
+    fi
+    ln -s "\$(cat "\$PENDING_DIR/shaders.source")" "\$TARGET_DIR/shaders"
+    mv "\$PENDING_DIR/shaders.mode" "\$PENDING_DIR/shaders.mode.applied_\$STAMP"
+    mv "\$PENDING_DIR/shaders.source" "\$PENDING_DIR/shaders.source.applied_\$STAMP"
+    echo "applied shaders symlink" >> "\$LOG_FILE"
+elif [ -d "\$PENDING_DIR/shaders" ]; then
     tmp="\$TARGET_DIR/shaders.tmp.\$STAMP"
     previous="\$TARGET_DIR/shaders.previous_\$STAMP"
     cp -R "\$PENDING_DIR/shaders" "\$tmp"
@@ -381,11 +439,55 @@ start_ghostty_apply_worker() {
         echo "  → Would launch deferred Ghostty applier after Ghostty exits"
     else
         nohup "$CORTEX_CONFIG_HOME/apply-pending-ghostty.sh" >>"$GHOSTTY_APPLY_LOG" 2>&1 &
-        echo "  → Ghostty config pendiente: se aplicará automáticamente cuando Ghostty se cierre"
+        echo "  → Cambios de Ghostty pendientes: se aplicarán automáticamente cuando Ghostty se cierre"
         echo "  → Log deferred Ghostty: $GHOSTTY_APPLY_LOG"
     fi
     GHOSTTY_DEFER_WORKER_STARTED=true
 }
+
+queue_ghostty_apply_worker() {
+    GHOSTTY_DEFER_WORKER_NEEDED=true
+}
+
+acquire_ghostty_pending_lock() {
+    if [[ "$GHOSTTY_PENDING_LOCK_HELD" == true ]]; then
+        return
+    fi
+
+    local lock_path="$CORTEX_CONFIG_HOME/apply-pending-ghostty.lock"
+    while ! ln -s "$$" "$lock_path" 2>/dev/null; do
+        if [[ -L "$lock_path" ]]; then
+            local lock_pid
+            lock_pid="$(readlink "$lock_path" 2>/dev/null || true)"
+            if [[ -n "$lock_pid" ]] && ! kill -0 "$lock_pid" 2>/dev/null; then
+                rm -f "$lock_path"
+                continue
+            fi
+        elif [[ -d "$lock_path" ]]; then
+            local lock_pid
+            lock_pid="$(cat "$lock_path/pid" 2>/dev/null || true)"
+            if [[ -z "$lock_pid" ]] || ! kill -0 "$lock_pid" 2>/dev/null; then
+                rm -f "$lock_path/pid"
+                rmdir "$lock_path" 2>/dev/null || true
+                continue
+            fi
+        fi
+        sleep 0.2
+    done
+    GHOSTTY_PENDING_LOCK_HELD=true
+}
+
+release_ghostty_pending_lock() {
+    if [[ "$GHOSTTY_PENDING_LOCK_HELD" != true ]]; then
+        return
+    fi
+
+    local lock_path="$CORTEX_CONFIG_HOME/apply-pending-ghostty.lock"
+    rm -f "$lock_path"
+    GHOSTTY_PENDING_LOCK_HELD=false
+}
+
+trap 'release_ghostty_pending_lock' EXIT
 
 defer_ghostty_target() {
     local src="$1"
@@ -395,12 +497,25 @@ defer_ghostty_target() {
 
     if [[ "$DRY_RUN" == true ]]; then
         echo "  → Would stage pending Ghostty $pending_name from $src"
-        start_ghostty_apply_worker
+        queue_ghostty_apply_worker
         return
     fi
 
     mkdir -p "$PENDING_GHOSTTY_DIR"
-    if [[ -d "$src" ]]; then
+    acquire_ghostty_pending_lock
+    if [[ "$INSTALL_MODE" == "symlink" ]]; then
+        if [[ -e "$PENDING_GHOSTTY_DIR/$pending_name" || -L "$PENDING_GHOSTTY_DIR/$pending_name" ]]; then
+            mv "$PENDING_GHOSTTY_DIR/$pending_name" "$PENDING_GHOSTTY_DIR/${pending_name}.previous_${TIMESTAMP}.$$"
+        fi
+        printf '%s\n' "symlink" > "$PENDING_GHOSTTY_DIR/${pending_name}.mode"
+        printf '%s\n' "$src" > "$PENDING_GHOSTTY_DIR/${pending_name}.source"
+    elif [[ -d "$src" ]]; then
+        if [[ -e "$PENDING_GHOSTTY_DIR/${pending_name}.mode" || -L "$PENDING_GHOSTTY_DIR/${pending_name}.mode" ]]; then
+            mv "$PENDING_GHOSTTY_DIR/${pending_name}.mode" "$PENDING_GHOSTTY_DIR/${pending_name}.mode.previous_${TIMESTAMP}.$$"
+        fi
+        if [[ -e "$PENDING_GHOSTTY_DIR/${pending_name}.source" || -L "$PENDING_GHOSTTY_DIR/${pending_name}.source" ]]; then
+            mv "$PENDING_GHOSTTY_DIR/${pending_name}.source" "$PENDING_GHOSTTY_DIR/${pending_name}.source.previous_${TIMESTAMP}.$$"
+        fi
         local tmp="$PENDING_GHOSTTY_DIR/${pending_name}.tmp.$$"
         if [[ -e "$tmp" || -L "$tmp" ]]; then
             mv "$tmp" "${tmp}.stale_${TIMESTAMP}.$$"
@@ -411,12 +526,46 @@ defer_ghostty_target() {
         fi
         mv "$tmp" "$PENDING_GHOSTTY_DIR/$pending_name"
     else
+        if [[ -e "$PENDING_GHOSTTY_DIR/${pending_name}.mode" || -L "$PENDING_GHOSTTY_DIR/${pending_name}.mode" ]]; then
+            mv "$PENDING_GHOSTTY_DIR/${pending_name}.mode" "$PENDING_GHOSTTY_DIR/${pending_name}.mode.previous_${TIMESTAMP}.$$"
+        fi
+        if [[ -e "$PENDING_GHOSTTY_DIR/${pending_name}.source" || -L "$PENDING_GHOSTTY_DIR/${pending_name}.source" ]]; then
+            mv "$PENDING_GHOSTTY_DIR/${pending_name}.source" "$PENDING_GHOSTTY_DIR/${pending_name}.source.previous_${TIMESTAMP}.$$"
+        fi
         local tmp="$PENDING_GHOSTTY_DIR/.tmp.${pending_name}.$$"
         cp "$src" "$tmp"
         mv -f "$tmp" "$PENDING_GHOSTTY_DIR/$pending_name"
     fi
 
-    start_ghostty_apply_worker
+    queue_ghostty_apply_worker
+}
+
+install_bundled_beard_font() {
+    mkdir -p "$(dirname "$CUSTOM_FONT")"
+    local font_tmp="${CUSTOM_FONT}.tmp.$$"
+    cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$font_tmp"
+    mv -f "$font_tmp" "$CUSTOM_FONT"
+    if [[ "$PLATFORM" == "Linux" ]] && command -v fc-cache &>/dev/null; then
+        fc-cache -f "$(dirname "$CUSTOM_FONT")" >/dev/null 2>&1 || true
+    fi
+    echo "  ✓ FiraCode Nerd Font Mono Beard instalada"
+}
+
+defer_bundled_beard_font() {
+    if [[ "$DRY_RUN" == true ]]; then
+        echo "  → Would stage pending FiraCode Nerd Font Mono Beard until Ghostty exits"
+        queue_ghostty_apply_worker
+        return
+    fi
+
+    mkdir -p "$PENDING_GHOSTTY_DIR"
+    local pending_font="$PENDING_GHOSTTY_DIR/FiraCodeNerdFontMonoBeard-Reg.ttf"
+    local font_tmp="$PENDING_GHOSTTY_DIR/.tmp.FiraCodeNerdFontMonoBeard-Reg.ttf.$$"
+    acquire_ghostty_pending_lock
+    cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$font_tmp"
+    mv -f "$font_tmp" "$pending_font"
+    queue_ghostty_apply_worker
+    echo "  → FiraCode Nerd Font Mono Beard pendiente: se instalará cuando Ghostty se cierre"
 }
 
 run_or_plan() {
@@ -430,34 +579,112 @@ run_or_plan() {
     fi
 }
 
+run_with_optional_sudo() {
+    if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+        "$@"
+    elif command -v sudo &>/dev/null; then
+        sudo "$@"
+    else
+        return 127
+    fi
+}
+
+confirm_system_package_install() {
+    local package_name="$1"
+    local description="$2"
+
+    if [[ "${CORTEX_DOTS_INSTALL_PACKAGES:-false}" == true ]]; then
+        return 0
+    fi
+
+    if [[ ! -t 0 ]]; then
+        echo "  ⚠️  $package_name no está instalado; se omite install porque stdin no es interactivo"
+        return 1
+    fi
+
+    read -p "  ¿Instalar $package_name ($description) con el package manager del sistema? (y/N) " -n 1 -r
+    echo
+    [[ $REPLY =~ ^[Yy]$ ]]
+}
+
+install_package_if_missing() {
+    local command_name="$1"
+    local package_name="$2"
+    local description="$3"
+    local tap="${4:-}"
+
+    if command -v "$command_name" &>/dev/null; then
+        echo "  ✓ $command_name ya instalado"
+        return
+    fi
+
+    if [[ "${CORTEX_DOTS_SKIP_PACKAGE_INSTALLS:-false}" == true ]]; then
+        echo "  → Skipping automatic install for $package_name ($description) because CORTEX_DOTS_SKIP_PACKAGE_INSTALLS=true"
+        return
+    fi
+
+    if [[ "$DRY_RUN" == true ]]; then
+        if command -v brew &>/dev/null; then
+            echo "  → Would install $package_name ($description) via Homebrew"
+        elif command -v apt-get &>/dev/null; then
+            echo "  → Would install $package_name ($description) via apt-get"
+        elif command -v dnf &>/dev/null; then
+            echo "  → Would install $package_name ($description) via dnf"
+        elif command -v pacman &>/dev/null; then
+            echo "  → Would install $package_name ($description) via pacman"
+        else
+            echo "  → Would skip automatic install for $package_name ($description); no supported package manager found"
+        fi
+        return
+    fi
+
+    if [[ "$PLATFORM" == "Linux" ]] && ! confirm_system_package_install "$package_name" "$description"; then
+        return
+    fi
+
+    echo "  → Instalando $package_name ($description)..."
+    if command -v brew &>/dev/null; then
+        [[ -z "$tap" ]] || brew tap "$tap"
+        if brew install "$package_name"; then
+            return
+        fi
+    elif command -v apt-get &>/dev/null; then
+        if run_with_optional_sudo apt-get install -y "$package_name"; then
+            return
+        fi
+    elif command -v dnf &>/dev/null; then
+        if run_with_optional_sudo dnf install -y "$package_name"; then
+            return
+        fi
+    elif command -v pacman &>/dev/null; then
+        if run_with_optional_sudo pacman -S --needed --noconfirm "$package_name"; then
+            return
+        fi
+    else
+        echo "  ⚠️  $command_name no está instalado; no encontré package manager soportado"
+        return
+    fi
+
+    echo "  ⚠️  No se pudo instalar $package_name automáticamente; instalalo con el package manager de $PLATFORM"
+}
+
 install_formula_if_missing() {
     local command_name="$1"
     local formula="$2"
     local description="$3"
     local tap="${4:-}"
 
-    if ! command -v "$command_name" &>/dev/null; then
-        if [[ "$DRY_RUN" == true ]]; then
-            if command -v brew &>/dev/null; then
-                echo "  → Would install $formula ($description) via Homebrew"
-            else
-                echo "  → Would skip automatic install for $formula ($description); install with your $PLATFORM package manager"
-            fi
-        elif command -v brew &>/dev/null; then
-            echo "  → Instalando $formula ($description)..."
-            [[ -z "$tap" ]] || brew tap "$tap"
-            brew install "$formula"
-        else
-            echo "  ⚠️  $command_name no está instalado; instalalo con el package manager de $PLATFORM"
-        fi
-    else
-        echo "  ✓ $command_name ya instalado"
-    fi
+    install_package_if_missing "$command_name" "$formula" "$description" "$tap"
 }
 
 install_starship_if_missing() {
     if command -v starship &>/dev/null; then
         echo "  ✓ starship ya instalado"
+        return
+    fi
+
+    if [[ "${CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS:-false}" == true ]]; then
+        echo "  → Skipping starship install because CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS=true"
         return
     fi
 
@@ -515,15 +742,17 @@ echo "📦 Verificando fuentes..."
 
 if [[ -f "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" ]]; then
     if [[ "$DRY_RUN" == true ]]; then
-        echo "  → Would create $(dirname "$CUSTOM_FONT")"
-        echo "  → Would install bundled FiraCode Nerd Font Mono Beard to $CUSTOM_FONT"
-    else
-        mkdir -p "$(dirname "$CUSTOM_FONT")"
-        cp "$DOTFILES/fonts/FiraCodeNerdFontMonoBeard-Reg.ttf" "$CUSTOM_FONT"
-        if [[ "$PLATFORM" == "Linux" ]] && command -v fc-cache &>/dev/null; then
-            fc-cache -f "$(dirname "$CUSTOM_FONT")" >/dev/null 2>&1 || true
+        if ghostty_is_running; then
+            defer_bundled_beard_font
+        else
+            echo "  → Would create $(dirname "$CUSTOM_FONT")"
+            echo "  → Would install bundled FiraCode Nerd Font Mono Beard to $CUSTOM_FONT"
         fi
-        echo "  ✓ FiraCode Nerd Font Mono Beard instalada"
+    elif ghostty_is_running; then
+        echo "  ⚠️  Ghostty está corriendo; dejando fuente pendiente para evitar reload/crash"
+        defer_bundled_beard_font
+    else
+        install_bundled_beard_font
     fi
 elif ! compgen -G "$FONT_GLOB" >/dev/null; then
     if [[ "$DRY_RUN" == true ]]; then
@@ -657,6 +886,11 @@ run_or_plan "chmod +x $HOME/.claude/statusline.sh" chmod +x "$HOME/.claude/statu
 install_target "$DOTFILES/claude/themes"          "$HOME/.claude/themes"
 install_target "$DOTFILES/lazygit/config.yml"     "$HOME/.config/lazygit/config.yml"
 
+if [[ "$GHOSTTY_DEFER_WORKER_NEEDED" == true ]]; then
+    release_ghostty_pending_lock
+    start_ghostty_apply_worker
+fi
+
 # --- AI CLI installation (optional) ---
 
 install_ai_cli_if_requested() {
@@ -666,6 +900,11 @@ install_ai_cli_if_requested() {
 
     if command -v "$command_name" &>/dev/null; then
         echo "  ✓ $display_name ya instalado"
+        return
+    fi
+
+    if [[ "${CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS:-false}" == true ]]; then
+        echo "  → Skipping $display_name install because CORTEX_DOTS_SKIP_EXTERNAL_INSTALLS=true"
         return
     fi
 

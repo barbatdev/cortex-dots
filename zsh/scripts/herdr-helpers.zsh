@@ -14,17 +14,16 @@ _herdr_context_label() {
 
 _herdr_workspace_name_for_path() {
     local target="${1:-$PWD}"
-    local git_root repo_name parent_name branch
+    local git_root repo_name branch
     git_root=$(git -C "$target" rev-parse --show-toplevel 2>/dev/null || true)
 
     if [[ -n "$git_root" ]]; then
         repo_name=$(basename "$git_root" | tr '.' '-')
-        parent_name=$(basename "$(dirname "$git_root")" | tr '.' '-')
         branch=$(git -C "$git_root" branch --show-current 2>/dev/null || true)
         if [[ -n "$branch" ]]; then
-            printf '%s-%s-%s' "$parent_name" "$repo_name" "${branch//[^A-Za-z0-9_.-]/-}"
+            printf '%s-%s' "$repo_name" "${branch//[^A-Za-z0-9_.-]/-}"
         else
-            printf '%s-%s' "$parent_name" "$repo_name"
+            printf '%s' "$repo_name"
         fi
     else
         basename "$target" | tr '.' '-'

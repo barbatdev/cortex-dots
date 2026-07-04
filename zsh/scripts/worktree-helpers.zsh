@@ -1,16 +1,16 @@
 #region Worktree Helpers
 # Funciones para gestión de git worktrees con integración Herdr.
-# Detecta repos PCSoft automáticamente y bloquea la creación de worktrees en ellos.
+# Detecta repos de proyectos PC automáticamente y bloquea la creación de worktrees en ellos.
 
-# Verifica si el repo actual contiene archivos PCSoft (Categoría B — prohibido worktree)
-_wt_is_pcsoft_repo() {
+# Verifica si el repo actual contiene archivos de proyectos PC (Categoría B — prohibido worktree)
+_wt_is_pc_repo() {
     local git_root
     git_root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
 
-    # Buscar cualquier extensión PCSoft en el árbol (solo nombre, no contenido)
-    local pcsoft_exts="wdp|wwp|wpp|wpj|wwh|wpw|prw|wdd|fic|mmo|ndx|wdr|wdq|wdi|wdt|wdv|wdk|rep|sty|cpl|bkp|wdg|wdc|wde|wdw"
+    # Buscar cualquier extensión PC en el árbol (solo nombre, no contenido)
+    local pc_exts="wdp|wwp|wpp|wpj|wwh|wpw|prw|wdd|fic|mmo|ndx|wdr|wdq|wdi|wdt|wdv|wdk|rep|sty|cpl|bkp|wdg|wdc|wde|wdw"
     git -C "$git_root" ls-files 2>/dev/null \
-        | grep -qE "\.(${pcsoft_exts})$"
+        | grep -qE "\.(${pc_exts})$"
 }
 
 # Obtiene el directorio raíz del repo actual
@@ -53,8 +53,8 @@ wtadd() {
     git_root=$(_wt_git_root) || { echo "❌ No estás dentro de un repo git"; return 1; }
 
     # Bloquear en repos PCSoft
-    if _wt_is_pcsoft_repo; then
-        echo "❌ Repo PCSoft detectado — worktrees no permitidos"
+    if _wt_is_pc_repo; then
+        echo "❌ Repo de proyecto PC detectado — worktrees no permitidos"
         echo "   Riesgo: corrupción de archivos si el IDE abre el mismo proyecto desde dos directorios"
         echo "   Alternativa: hacé stash + checkout en el mismo directorio"
         return 1

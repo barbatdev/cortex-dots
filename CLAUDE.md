@@ -30,7 +30,7 @@ dotfiles/
 │   └── scripts/              # Scripts sourced desde zshrc
 │       ├── claude-helpers.zsh   # cc, ccx, ccd, ccclip
 │       ├── git-helpers.zsh      # git-workdev, git-personaldev, git-whoami, clone-*
-│       ├── pcsoft-helpers.zsh   # is-pcsoft-forbidden, is-pcsoft-editable
+│       ├── pc-helpers.zsh       # is-pc-forbidden, is-pc-editable
 │       ├── screenshots.zsh      # ss, last, ssd, imgclip
 │       └── herdr-helpers.zsh    # ta, tn, tk, tl, tdev
 ├── starship/starship.toml    # Prompt Gruvbox Dark → ~/.config/starship.toml
