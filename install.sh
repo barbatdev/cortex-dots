@@ -15,15 +15,21 @@ else
     TMPDIR_INSTALL="$(mktemp -d)"
     trap 'rm -rf "$TMPDIR_INSTALL"' EXIT INT TERM
     DOTFILES="$TMPDIR_INSTALL/$REPO_NAME"
-    curl -fsSL "https://github.com/${REPO_ORG}/${REPO_NAME}/archive/refs/tags/${TAG}.tar.gz" -o "$TMPDIR_INSTALL/release.tar.gz"
-    tar -xzf "$TMPDIR_INSTALL/release.tar.gz" -C "$TMPDIR_INSTALL"
+    curl -fsSL "https://github.com/${REPO_ORG}/${REPO_NAME}/archive/refs/tags/${TAG}.tar.gz" -o "$TMPDIR_INSTALL/release.tar.gz" || {
+        echo "ERROR: could not download release $TAG from GitHub" >&2
+        exit 1
+    }
+    tar -xzf "$TMPDIR_INSTALL/release.tar.gz" -C "$TMPDIR_INSTALL" || {
+        echo "ERROR: failed to extract release $TAG" >&2
+        exit 1
+    }
     # The tarball extracts as $REPO_NAME-$TAG/, rename to clean path
     EXTRACTED_DIR="$TMPDIR_INSTALL/${REPO_NAME}-${TAG}"
     if [ -d "$EXTRACTED_DIR" ]; then
         mv "$EXTRACTED_DIR" "$DOTFILES"
     fi
     if [ ! -f "$DOTFILES/install.sh" ]; then
-        echo "ERROR: could not download release $TAG from GitHub" >&2
+        echo "ERROR: release $TAG does not contain install.sh" >&2
         exit 1
     fi
 fi
@@ -503,7 +509,7 @@ release_ghostty_pending_lock() {
     GHOSTTY_PENDING_LOCK_HELD=false
 }
 
-trap 'release_ghostty_pending_lock' EXIT
+trap 'release_ghostty_pending_lock; rm -rf "${TMPDIR_INSTALL:-}"' EXIT
 
 defer_ghostty_target() {
     local src="$1"
