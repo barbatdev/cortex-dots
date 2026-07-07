@@ -17,6 +17,8 @@
 
 > Breaking: this release removes all code and documentation that belongs to the cortex product. This repo is now exclusively dotfiles — configuration files, installer, and shell aliases.
 
+- `curl -fsSL https://raw.githubusercontent.com/barbatdev/cortex-dots/v0.2.0/install.sh | bash` installs from this release.
+
 ### Breaking
 
 - Removed `docs/` — agent-state spec, workflow docs, keymaps, release checklist (belong to cortex product).

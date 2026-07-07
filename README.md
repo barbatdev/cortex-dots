@@ -6,6 +6,20 @@ The repo is intentionally generic. Private paths, tokens, emails, hostnames, pro
 
 ## Install
 
+Install latest release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/barbatdev/cortex-dots/v0.2.0/install.sh | bash
+```
+
+Install a specific version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/barbatdev/cortex-dots/v0.1.1/install.sh | bash
+```
+
+Install from source (manual):
+
 ```bash
 git clone <repo-url> ~/.cortex/cortex-dots
 cd ~/.cortex/cortex-dots
